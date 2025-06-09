@@ -1,0 +1,52 @@
+# Define the services (containers)
+services:
+  # The PostgreSQL database service
+  db:
+    image: postgres:15-alpine
+    container_name: enem_db
+    environment:
+      # Set credentials for the database
+      - POSTGRES_USER=enem_user
+      - POSTGRES_PASSWORD=enem_password
+      - POSTGRES_DB=enem_db
+    ports:
+      # Map container port 5432 to host port 5432
+      - "5432:5432"
+    volumes:
+      # Persist database data on the host machine
+      - postgres_data:/var/lib/postgresql/data
+      # Mount a directory for initialization scripts
+      # Any .sql or .sh file in this directory will be run on first start
+      - ./init-db:/docker-entrypoint-initdb.d
+
+  # The Streamlit application service
+  app:
+    container_name: enem_app
+    # Build the image from the Dockerfile in the current directory
+    build: .
+    ports:
+      # Map container port 8501 to host port 8501
+      - "8501:8501"
+    environment:
+      # Pass database connection details to the application
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=enem_db
+      - DB_USER=enem_user
+      - DB_PASSWORD=enem_password
+      # Ensure Streamlit runs in headless mode
+      - STREAMLIT_SERVER_HEADLESS=true
+    depends_on:
+      # Ensure the 'db' service is started before the 'app' service
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://db:5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Define the named volume for data persistence
+volumes:
+  postgres_data:
+

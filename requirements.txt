@@ -1,0 +1,5 @@
+streamlit==1.45.1
+google-genai==1.19.0
+psycopg==3.2.9
+python-dotenv==1.1.0
+toolbox-core==0.2.0
