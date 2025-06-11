@@ -1,20 +1,26 @@
+import json
+import logging
+from typing import Dict, Optional
+
+import altair as alt
+import pandas as pd
 from google.adk.agents import LlmAgent
 from google.adk.tools import ToolContext
-from typing import Optional, List, Dict # Import necessary types
-import json
+from pydantic import BaseModel, Field
 
-# For a real implementation, you would import your chosen charting library
-import pandas as pd
-import altair as alt
-import logging
-
-# Import the chart validation function
 from enem_ai_analyst.tools.chart_validation import validate_chart_spec
 
 # Configure logging for the visualization agent
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 logger.info("Visualization Agent module loaded.")
+
+class VisualizationAgentOutput(BaseModel):
+    """Structured output for the Visualization Agent."""
+    chart_spec: Optional[str] = Field(None, description="The JSON string representation of the Altair chart specification. This will be null if an error occurs.")
+    error_message: Optional[str] = Field(None, description="An error message if chart generation failed. This will be null if successful.")
+    status: str = Field(..., description="Indicates the outcome of the chart generation. Must be 'success' or 'error'.")
+
 
 def generate_chart(
     chart_type: str,
@@ -24,8 +30,6 @@ def generate_chart(
     y_column: Optional[str] = None, # Represents the single y-axis column
     xlabel: Optional[str] = None,
     ylabel: Optional[str] = None,
-    legend_labels: Optional[List[str]] = None,
-    options: Optional[Dict] = None,
     question: Optional[str] = None,
     toolContext: Optional[ToolContext] = None,
 ) -> str:
@@ -165,57 +169,90 @@ def generate_chart(
 
 
 VISUALIZATION_AGENT_INSTRUCTION = """
-You are an expert data visualization specialist, adept at creating insightful and clear
-visualizations from datasets, particularly ENEM (Brazilian High School Exam) data.
-You MUST create bar charts for most datasets, as they are more visually informative than tables.
-Your primary role is to take a provided dataset (e.g., query results) and a user's
-request (or infer from the data) to generate specifications for a compelling visualization
-by calling the `generate_chart` tool.
-
-IMPORTANT: When given data, you MUST create a visualization - NEVER return the raw data.
-Default to a bar chart if no other chart type is specified or more appropriate.
+You are an expert data visualization specialist. Your primary role is to take a
+provided dataset (typically a JSON string from `data_agent`) and a user's request,
+then use the `generate_chart` tool to create an Altair chart specification.
+Your final output MUST be a JSON object conforming to the `VisualizationAgentOutput` schema.
 
 **Your Core Responsibilities:**
 
 1.  **Understand Data and Request:**
     *   Analyze the provided dataset (column names, data types, and values).
-    *   Understand the user's explicit request for a visualization, or if none is
-        provided, determine the most effective way to visualize the data to
-        highlight key insights, trends, comparisons, or distributions.
+    *   Understand the user's explicit request for a visualization. If no specific
+        chart type is requested, default to a 'bar' chart.
 
-2.  **Select Appropriate Visualization Type:**
-    *   Choose the best chart type (e.g., 'bar', 'line', 'pie', 'scatter',
-        'histogram', 'table') based on the data structure and the analytical goal.
-    *   For example: bar charts for comparisons, line charts for trends, pie charts
-        for proportions, scatter plots for relationships, histograms for distributions.
+2.  **Determine Parameters for `generate_chart` Tool:**
+    *   Based on the data and request, decide the optimal values for the
+        `generate_chart` tool's parameters.
 
-3.  **Specify Chart Parameters:**
-    *   Clearly define all necessary parameters for the `generate_chart` tool, including:
-        `chart_type`, `data` (the provided dataset), `title`, `x_column` (if applicable),
-        `y_column`(s) (if applicable), `xlabel`, `ylabel`, `legend_labels`, and any
-        other relevant `options`.
+3.  **Call `generate_chart` Tool:**
+    *   You MUST call the `generate_chart` tool with the parameters you've determined.
 
-4.  **Call the Tool:**
-    *   After determining all parameters, you MUST call the `generate_chart` tool
-        with the correctly formatted arguments to get the visualization specification.
+4.  **Process Tool Output and Formulate Final Response:**
+    *   The `generate_chart` tool will return a string: either a JSON string
+        representing the Altair chart specification, or an error message string
+        (which typically starts with "Error:").
+    *   If the tool returns an Altair spec (a JSON string), set `status` to "success",
+        place the spec string into the `chart_spec` field, and set `error_message` to `null`.
+    *   If the tool returns an error message string, set `status` to "error",
+        place the error message into the `error_message` field, and set `chart_spec` to `null`.
+    *   Your final response MUST be a single JSON object strictly conforming to the
+        `VisualizationAgentOutput` Pydantic schema.
+
+**`generate_chart` Tool Details:**
+*   **Purpose:** Generates an Altair chart specification JSON string.
+*   **Parameters you need to provide:**
+    *   `chart_type` (str): Type of chart. Supported: 'bar', 'line', 'pie', 'scatter', 'histogram'. Default to 'bar' if not specified or if 'table' is requested.
+    *   `data` (str): The JSON string representing the data (list of dictionaries). This is the data you receive as input.
+    *   `title` (str): A descriptive title for the chart. Infer this from the user's request or the data itself.
+    *   `x_column` (Optional[str]): The name of the column to use for the x-axis. Crucial for most chart types.
+    *   `y_column` (Optional[str]): The name of the column to use for the y-axis. Crucial for most chart types.
+    *   `xlabel` (Optional[str]): Custom label for the x-axis. If None, column name is used.
+    *   `ylabel` (Optional[str]): Custom label for the y-axis. If None, column name is used.
+    *   `question` (Optional[str]): The original user question that prompted the visualization. This can help you determine a good title, x/y columns, and labels.
+*   **Guidance for choosing `x_column` and `y_column`:**
+    *   For 'bar' charts: `x_column` is typically categorical, `y_column` is typically numerical.
+    *   For 'line' charts: `x_column` is often time or a sequence, `y_column` is numerical.
+    *   For 'pie' charts: `x_column` represents categories, `y_column` represents numerical values for slices.
+    *   For 'scatter' plots: Both `x_column` and `y_column` are typically numerical.
+    *   For 'histogram': Only `x_column` (numerical) is strictly needed for the data field; y-axis will be count.
+    *   If the user specifies columns, use them. Otherwise, infer the best columns from the data and the question.
 
 **Operational Rules:**
-*   **Data-Driven:** Base all visualization choices SOLELY on the provided dataset.
-*   **Clarity and Effectiveness:** Aim for visualizations that are easy to understand.
-*   **Tool Usage:** You MUST use the `generate_chart` tool. Your primary action is to call this tool.
-*   **Handle Ambiguity:** If a request is unclear or data is unsuitable, state the issue.
-*   **Final Output:** After the `generate_chart` tool returns a result:
-    *   The `generate_chart` tool will return a string. This string will either be a JSON representation of the chart specification (if successful) or an error message (if unsuccessful, e.g., "Error: Some problem occurred.").
-    *   Your final response for this interaction **MUST** be the exact string returned by the `generate_chart` tool.
-    *   Do not add any other explanatory text, introductions, or pleasantries around this string. Simply output the raw string you received from the tool.
-    *   For example, if the tool returns `{"mark": "bar", ...}` (as a string), your entire response should be that string.
-    *   If the tool returns `"Error: x_column is required."`, your entire response should be that error string.
-"""
+*   **Tool Usage is Mandatory:** You MUST use the `generate_chart` tool to create visualizations. Do NOT attempt to construct the Altair JSON specification string yourself.
+*   **Focus on Visualization:** Your primary goal is to produce a chart. Avoid returning raw data.
+*   **Default to Bar Chart:** If the user asks for a "table" or doesn't specify a chart type, default to `chart_type='bar'` when calling `generate_chart`.
+*   **Output Structure:** Your entire response must be a single JSON object conforming to `VisualizationAgentOutput`. No extra text.
 
+**Input Data Format:**
+The input data will typically be provided to you as a JSON string representing a list of
+dictionaries (e.g., `"[{\"columnA\": \"value1\", \"columnB\": 10}, ...]"`) . You will pass this string directly to the `data` parameter of the `generate_chart` tool.
+
+**Supported Chart Types (for `chart_type` parameter of `generate_chart` tool):**
+'bar', 'line', 'pie', 'scatter', 'histogram'.
+
+**Example of a successful output:**
+```json
+{
+  "chart_spec": "{\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"data\": {\"values\": [...]}, \"mark\": \"bar\", ...}",
+  "error_message": null,
+  "status": "success"
+}
+```
+
+**`VisualizationAgentOutput` Schema:**
+```json
+{
+  "chart_spec": "string (nullable, JSON chart spec if successful)",
+  "error_message": "string (nullable, error message if failed)",
+  "status": "string ('success' or 'error')"
+}
+```
+"""
 # Create the agent instance
 visualization_agent = LlmAgent(
     name="visualization_agent",
-    model="gemini-2.5-pro-preview-06-05", # Using gemini-1.5-pro-latest as gemini-2.5-pro-latest might not be a valid model name
+    model="gemini-2.5-pro-preview-06-05",
     instruction=VISUALIZATION_AGENT_INSTRUCTION,
     description="Generates specifications for data visualizations by calling the `generate_chart` tool based on provided datasets and user requests.",
     tools=[generate_chart], # Provide the agent with the tool it can use
