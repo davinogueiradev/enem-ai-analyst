@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "enem-ai-analyst" # Substitua pelo nome real do seu projeto
+version = "0.1.0" # Pode ajustar a versão inicial conforme necessário
+description = "Descrição do seu projeto" # Adicione uma breve descrição
+authors = ["O Seu Nome <o.seu.email@exemplo.com>"] # Substitua pelos seus dados
+readme = "README.md" # Ou o nome do seu ficheiro README
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "~3.12" # Com base na versão do Python do seu projeto (3.12.8)
+
+streamlit = "==1.45.1"
+google-genai = "==1.19.0"
+python-dotenv = "==1.1.0"
+toolbox-core = "==0.2.0"
+google-adk = "==1.2.1"
+pandas = "==2.3.0"
+numpy = "==2.3.0"
+matplotlib = "==3.10.3"
+asyncio = ">=3.4.3"
+charset-normalizer = "^3.4.2"
+psycopg2-binary = "^2.9.10"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.11.13"
+mypy = "^1.16.0"
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

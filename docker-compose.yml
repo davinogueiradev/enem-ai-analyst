@@ -17,7 +17,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       # Mount a directory for initialization scripts
       # Any .sql or .sh file in this directory will be run on first start
-      - ./init-db:/docker-entrypoint-initdb.d
+      - ./data:/docker-entrypoint-initdb.d
 
   # The Streamlit application service
   app:
