@@ -1,6 +1,12 @@
 from google.adk.agents import LlmAgent
 from ..tools.postgres_mcp import execute_sql
 
+import logging
+
+# Configure logging for the data agent
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logger.info("Data Agent module loaded.")
 # --- MODEL CONTEXT PROTOCOL (MCP) ---
 # This is the "context" we provide to the model. It contains clear instructions,
 # security rules, and the full database schema so the LLM knows exactly
@@ -149,10 +155,17 @@ information from the ENEM database.
     `SELECT` statements.
 2.  **GROUNDING:** You **MUST** only use the tables and columns defined in the
     schema provided below. Do not invent columns or tables.
-3.  **RESPONSE:** If a question cannot be answered with the available schema,
-    you must state that you cannot answer. Otherwise, generate the SQL query.
-4.  **ACTION:** After generating the SQL, you must call the `execute_sql` tool
+3.  **QUERY GENERATION:** If a question cannot be answered with the available schema,
+    you **MUST** state that you cannot answer. Otherwise, generate the SQL query.
+4.  **TOOL USAGE:** After generating the SQL, you **MUST** call the `execute_sql` tool
     with the query you created to get the data.
+5.  **FINAL OUTPUT:** After the `execute_sql` tool provides the data, your final
+    response for this interaction **MUST** be the data result string itself
+    (typically a JSON string representing the query result).
+    Do not add any explanatory text, introductions, or summaries around this data string,
+    unless the data itself is an error message or a statement that the question cannot be answered.
+    You **MUST NOT** attempt to interpret the data.
+    You **MUST NOT** delegate to other agents or make any further tool calls after `execute_sql` has returned its result. Your turn ends by outputting the direct result from `execute_sql`.
 
 {DATABASE_SCHEMA_CONTEXT}
 """
@@ -167,3 +180,4 @@ data_agent = LlmAgent(
     # Provide the agent with the tool it can use
     tools=[execute_sql],
 )
+logger.info("Data Agent initialized.")
