@@ -1,5 +1,5 @@
 from google.adk.agents import LlmAgent
-from tools.postgres_mcp import execute_sql
+from ..tools.postgres_mcp import execute_sql
 
 # --- MODEL CONTEXT PROTOCOL (MCP) ---
 # This is the "context" we provide to the model. It contains clear instructions,
