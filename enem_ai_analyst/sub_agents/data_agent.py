@@ -1,23 +1,13 @@
-import logging
-
 from google.adk.agents import LlmAgent
-from pydantic import BaseModel, Field
-
 from ..tools.postgres_mcp import execute_sql
+
+import logging
 
 # Configure logging for the data agent
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 logger.info("Data Agent module loaded.")
 # --- MODEL CONTEXT PROTOCOL (MCP) ---
-
-class DataAgentOutput(BaseModel):
-    """
-    Structured output for the Data Agent.
-    """
-    sql_query: str = Field(..., description="The SQL query generated to answer the user's question.")
-    query_result: str = Field(..., description="The result obtained from executing the SQL query. This is typically a JSON string representing the data, or an error message if the query failed or the question could not be answered.")
-
 # This is the "context" we provide to the model. It contains clear instructions,
 # security rules, and the full database schema so the LLM knows exactly
 # what tables and columns it can work with.
@@ -170,25 +160,14 @@ information from the ENEM database.
 4.  **TOOL USAGE:** After generating the SQL, you **MUST** call the `execute_sql` tool
     with the query you created to get the data.
 5.  **FINAL OUTPUT:** After the `execute_sql` tool provides the data, your final
-    response for this interaction **MUST** be a single JSON object that strictly
-    conforms to the `DataAgentOutput` Pydantic schema provided below.
-    The SQL query you generated should be placed in the `sql_query` field, and
-    the result string from the `execute_sql` tool (which could be data or an
-    error message) should be placed in the `query_result` field.
-    Do not add any introductory or concluding text outside of this JSON object.
+    response for this interaction **MUST** be the data result string itself
+    (typically a JSON string representing the query result).
+    Do not add any explanatory text, introductions, or summaries around this data string,
+    unless the data itself is an error message or a statement that the question cannot be answered.
     You **MUST NOT** attempt to interpret the data.
-    You **MUST NOT** delegate to other agents or make any further tool calls after `execute_sql`
-    has returned its result. Your turn ends by outputting the JSON object conforming to `DataAgentOutput`.
+    You **MUST NOT** delegate to other agents or make any further tool calls after `execute_sql` has returned its result. Your turn ends by outputting the direct result from `execute_sql`.
 
 {DATABASE_SCHEMA_CONTEXT}
-
-**`DataAgentOutput` Schema:**
-```json
-{{
-  "sql_query": "string",
-  "query_result": "string"
-}}
-```
 """
 
 # Create the agent instance
@@ -197,8 +176,8 @@ data_agent = LlmAgent(
     # Using a powerful model is key for good SQL generation
     model="gemini-2.5-pro-preview-06-05", # Using gemini-1.5-pro-latest as gemini-2.5-pro-latest might not be a valid model name
     instruction=DATA_AGENT_INSTRUCTION,
-    description="Generates and executes SQL queries against the ENEM database, returning a JSON string containing the SQL query and its result.",
+    description="Generates and executes SQL queries against the ENEM database.",
     # Provide the agent with the tool it can use
     tools=[execute_sql],
 )
-logger.info("Data Agent initialized to output a JSON string.")
+logger.info("Data Agent initialized.")

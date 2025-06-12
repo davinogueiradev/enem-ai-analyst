@@ -43,6 +43,18 @@ for message in st.session_state.messages:
             except Exception as e:
                 st.error(f"Failed to render chart: {e}")
                 st.markdown(message["content"]) # Fallback to markdown
+        elif message["type"] == "table":
+            try:
+                data = json.loads(message["content"])
+                import pandas as pd
+                df = pd.DataFrame(data)
+                st.table(df)
+            except json.JSONDecodeError:
+                st.error("Failed to parse table data.")
+                st.markdown(message["content"]) # Fallback to markdown
+            except Exception as e:
+                st.error(f"Failed to render table: {e}")
+                st.markdown(message["content"]) # Fallback to markdown
         else:
             st.markdown(message["content"])
 
@@ -78,6 +90,7 @@ if prompt := st.chat_input("What would you like to know?"):
 
                         # Check if the response is a chart specification (JSON string)
                         is_chart = False
+                        is_table = False
                         if isinstance(full_response_content, str) and \
                         full_response_content.strip().startswith("{") and \
                         full_response_content.strip().endswith("}"):
@@ -94,8 +107,27 @@ if prompt := st.chat_input("What would you like to know?"):
                             except Exception:
                                 # Error rendering chart, treat as text
                                 pass
+                        # Check if the response is a JSON array that should be displayed as a table
+                        elif isinstance(full_response_content, str) and \
+                        full_response_content.strip().startswith("[") and \
+                        full_response_content.strip().endswith("]"):
+                            try:
+                                data = json.loads(full_response_content)
+                                if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+                                    # Convert to DataFrame and display as a table
+                                    import pandas as pd
+                                    df = pd.DataFrame(data)
+                                    st.table(df)
+                                    is_table = True
+                                    st.session_state.messages.append({"role": "assistant", "content": full_response_content, "type": "table"})
+                            except json.JSONDecodeError:
+                                # Not a valid JSON, treat as text
+                                pass
+                            except Exception as e:
+                                st.error(f"Failed to render table: {e}")
+                                pass
 
-                        if not is_chart:
+                        if not is_chart and not is_table:
                             message_placeholder.markdown(full_response_content)
                             st.session_state.messages.append({"role": "assistant", "content": full_response_content, "type": "text"})
 
