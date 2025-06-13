@@ -1,18 +1,17 @@
-import streamlit as st
-import json
 import asyncio
-import os
-import pandas as pd
-import altair as alt
+import json
 
-from enem_ai_analyst.agent import root_agent
+import pandas as pd
+import streamlit as st
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
+from enem_ai_analyst.agent import root_agent
+
 APP_NAME = "google_search_agent"
-USER_ID = "user1234"
-SESSION_ID = "1234"
+USER_ID = "user12345"
+SESSION_ID = "12345"
 
 # Session and Runner
 session_service = InMemorySessionService()
@@ -24,88 +23,70 @@ st.set_page_config(page_title="ENEM AI Analyst", layout="wide")
 st.title("🤖 ENEM AI Analyst")
 st.caption("Ask me anything about the ENEM data!")
 
-
-def parse_and_display_content(content_text):
-    """Parse content and display text, tables, and charts"""
-
-    # Split content by common delimiters that might separate text from chart specs
-    parts = []
-
-    # Look for chart specifications (JSON blocks)
-    lines = content_text.split('\n')
-    current_text = []
-    in_json_block = False
-    json_block = []
-
-    for line in lines:
-        stripped_line = line.strip()
-
-        # Check if this line starts a JSON block
-        if stripped_line.startswith('```') and 'json' in stripped_line.lower():
-            if current_text:
-                parts.append(('text', '\n'.join(current_text)))
-                current_text = []
-            in_json_block = True
-            continue
-        elif stripped_line == '```' and in_json_block:
-            if json_block:
-                parts.append(('json', '\n'.join(json_block)))
-                json_block = []
-            in_json_block = False
-            continue
-
-        if in_json_block:
-            json_block.append(line)
-        else:
-            current_text.append(line)
-
-    # After the loop, flush any remaining content
-    if in_json_block: # Loop ended inside a JSON block
-        if json_block:
-            parts.append(('text', '\n'.join(json_block))) # Treat unterminated JSON as text
-    elif current_text: # Loop ended outside a JSON block, and there's pending text
-        parts.append(('text', '\n'.join(current_text)))
-
-    # If no parts were found, treat entire content as text
-    if not parts and content_text.strip(): # Check if content_text had actual content
-        parts = [('text', content_text)]
-
-    # Display each part
-    for part_type, part_content in parts:
-        if part_type == 'text' and part_content.strip():
-            st.markdown(part_content.strip())
-        elif part_type == 'json':
-            try:
-                chart_spec = json.loads(part_content)
-
-                chart = alt.Chart(pd.DataFrame(chart_spec["data"]["values"]))
-
-                if chart_spec["mark"] == "bar":
-                    chart = chart.mark_bar()
-                chart = chart.encode(
-                    alt.X(chart_spec["encoding"]["x"]["field"], 
-                          type=chart_spec["encoding"]["x"]["type"],
-                          title=chart_spec["encoding"]["x"]["title"]),
-                    alt.Y(chart_spec["encoding"]["y"]["field"], 
-                          type=chart_spec["encoding"]["y"]["type"],
-                          sort=chart_spec["encoding"]["y"]["sort"],
-                          title=chart_spec["encoding"]["y"]["title"])
-                )
-                chart = chart.properties(title=chart_spec["title"])
-                st.altair_chart(chart, use_container_width=True)
-
-            except json.JSONDecodeError:
-                st.error("Failed to parse chart specification")
-                st.code(part_content, language='json')
-            except Exception as e:
-                st.error(f"Failed to render chart: {e}")
-                st.code(part_content, language='json')
-
-
 def display_message_content(message):
     """Display a message based on its type"""
-    print("MYDEBUG: display_message_content")
-    if message["type"] == "chart":
+    if message["role"] == "user":
+        st.markdown(message["content"])
+    elif message["role"] == "assistant":
+        if message.get("type") == "structured_response":
+            try:
+                response_data = json.loads(message["content"])
+                display_structured_assistant_response(response_data)
+            except json.JSONDecodeError:
+                st.error("Failed to parse assistant's structured response (JSON). Displaying raw content:")
+                st.markdown(message["content"]) # Fallback to markdown
+            except Exception as e:
+                st.error(f"Error displaying structured assistant response: {e}")
+                st.markdown(message["content"]) # Fallback
+        elif message.get("type") == "text" or "type" not in message: # Fallback for simple text
+            st.markdown(message["content"])
+        else: # Handle other potential old types if necessary, or just markdown
+            st.warning(f"Unknown assistant message type: {message.get('type')}. Displaying raw content.")
+            st.markdown(message["content"])
+
+
+def display_structured_assistant_response(response_data):
+    """Displays the content from a parsed structured JSON response from the assistant."""
+    if "summary" in response_data and response_data["summary"]:
+        st.markdown(response_data["summary"])
+
+    if "visualization" in response_data:
+        viz = response_data["visualization"]
+        viz_type = viz.get("type")
+
+        if viz_type == "chart" and "spec" in viz:
+            try:
+                chart_spec = viz["spec"]
+                st.altair_chart(chart_spec, use_container_width=True)
+            except Exception as e:
+                st.error(f"Failed to render chart from structured response: {e}")
+                st.json(viz.get("spec", {})) # Show the spec if rendering fails
+        elif viz_type == "table" and "data" in viz: # Assuming table data is in viz["data"]
+            try:
+                table_data = viz["data"]
+                if isinstance(table_data, list):
+                    df = pd.DataFrame(table_data)
+                    st.table(df)
+                else:
+                    st.warning("Table data is not in the expected list format.")
+                    st.json(table_data)
+            except Exception as e:
+                st.error(f"Failed to render table from structured response: {e}")
+                st.json(viz.get("data", {}))
+        elif viz_type and viz_type not in ["chart", "table", "text_only", "none"]:
+             st.warning(f"Unsupported visualization type: {viz_type}")
+
+    if "debug_info" in response_data:
+        debug = response_data["debug_info"]
+        if debug.get("show_sql_button") and "sql_query" in debug:
+            with st.expander("Show SQL Query"):
+                st.code(debug["sql_query"], language="sql")
+
+
+# The old display_message_content logic, preserved for reference if needed, but replaced by the above.
+def _display_message_content_old(message):
+    """Display a message based on its type (OLD IMPLEMENTATION)"""
+    if message["type"] == "chart": # This was for direct chart JSON
         try:
             chart_spec = json.loads(message["content"])
             # Check if this is a VisualizationAgentOutput structure
@@ -136,12 +117,8 @@ def display_message_content(message):
         except Exception as e:
             st.error(f"Failed to render table: {e}")
             st.markdown(message["content"])
-    elif message["type"] == "mixed":
-        # Handle mixed content (text + charts + tables)
-        parse_and_display_content(message["content"])
-    else:
+    elif message["type"] == "text": # Default or simple text
         st.markdown(message["content"])
-
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -186,84 +163,38 @@ if prompt := st.chat_input("What would you like to know?"):
                 if full_response_content:
                     # Clear the placeholder and display the content
                     message_placeholder.empty()
-
-                    # Check if response contains both text and chart data
-                    has_chart_marker = 'Chart:' in full_response_content or 'Gráfico:' in full_response_content
-                    has_json_block = '```' in full_response_content and (
-                                '{' in full_response_content or '[' in full_response_content)
-
-                    # Determine content type
-                    if has_chart_marker or has_json_block:
-                        print("MYDEBUG: has_chart_marker=true or has_json_block=true")
-
-                        # Mixed content - contains text and possibly charts
-                        parse_and_display_content(full_response_content)
+                    try:
+                        # Attempt to extract the main JSON object from the raw response string.
+                        # This handles cases where the LLM might include extraneous text or markdown
+                        # around the JSON object it's supposed to return.
+                        json_start_index = full_response_content.find('{')
+                        json_end_index = full_response_content.rfind('}')
+                        if json_start_index != -1 and json_end_index != -1 and json_end_index > json_start_index:
+                            full_response_content = full_response_content[json_start_index : json_end_index + 1]
+                        print(f"MYDEBUG: full_response_content >>>> {full_response_content}")
+                        # Agent is expected to return a single JSON object string
+                        response_data = json.loads(full_response_content)
+                        
+                        # Display the structured response immediately
+                        display_structured_assistant_response(response_data)
+                        
+                        # Store the raw JSON string for history
                         st.session_state.messages.append(
-                            {"role": "assistant", "content": full_response_content, "type": "mixed"})
-                    elif full_response_content.strip().startswith("{") and full_response_content.strip().endswith("}"):
-                        # Pure JSON chart specification
-                        print("MYDEBUG: Pure JSON chart specification")
-                        try:
-                            chart_spec = json.loads(full_response_content)
-                            if "$schema" in chart_spec or ("mark" in chart_spec and "encoding" in chart_spec):
-                                st.altair_chart(chart_spec, use_container_width=True)
-                                st.session_state.messages.append(
-                                    {"role": "assistant", "content": full_response_content, "type": "chart"})
-                            else:
-                                st.markdown(full_response_content)
-                                st.session_state.messages.append(
-                                    {"role": "assistant", "content": full_response_content, "type": "text"})
-                        except json.JSONDecodeError:
-                            st.markdown(full_response_content)
-                            st.session_state.messages.append(
-                                {"role": "assistant", "content": full_response_content, "type": "text"})
-                    elif full_response_content.strip().startswith("[") and full_response_content.strip().endswith("]"):
-                        # JSON array - potentially table data
-                        print("MYDEBUG: JSON array - potentially table data")
-                        try:
-                            data = json.loads(full_response_content)
-                            if isinstance(data, list) and all(isinstance(item, dict) for item in data):
-                                chart_keywords = ["chart", "graph", "plot", "visualize", "visualization", "diagram"]
-                                is_chart_request = any(keyword in prompt.lower() for keyword in chart_keywords)
-
-                                df = pd.DataFrame(data)
-
-                                if is_chart_request and len(df.columns) >= 2:
-                                    # Display as chart
-                                    x_column = df.columns[0]
-                                    numeric_cols = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
-                                    y_column = numeric_cols[0] if numeric_cols else df.columns[1]
-
-                                    chart = alt.Chart(df).mark_bar().encode(
-                                        x=alt.X(x_column),
-                                        y=alt.Y(y_column),
-                                        tooltip=list(df.columns)
-                                    ).properties(
-                                        title=f"{y_column} by {x_column}"
-                                    )
-
-                                    st.altair_chart(chart, use_container_width=True)
-                                    chart_spec = chart.to_dict()
-                                    st.session_state.messages.append(
-                                        {"role": "assistant", "content": json.dumps(chart_spec), "type": "chart"})
-                                else:
-                                    # Display as table
-                                    st.table(df)
-                                    st.session_state.messages.append(
-                                        {"role": "assistant", "content": full_response_content, "type": "table"})
-                            else:
-                                st.markdown(full_response_content)
-                                st.session_state.messages.append(
-                                    {"role": "assistant", "content": full_response_content, "type": "text"})
-                        except json.JSONDecodeError:
-                            st.markdown(full_response_content)
-                            st.session_state.messages.append(
-                                {"role": "assistant", "content": full_response_content, "type": "text"})
-                    else:
-                        # Regular text content
+                            {"role": "assistant", "content": full_response_content, "type": "structured_response"}
+                        )
+                    except json.JSONDecodeError:
+                        # This case should ideally not happen if the agent adheres to ORCHESTRATOR_INSTRUCTION
+                        st.error("Assistant response was not in the expected JSON format. Displaying raw response:")
                         st.markdown(full_response_content)
                         st.session_state.messages.append(
                             {"role": "assistant", "content": full_response_content, "type": "text"})
+                    except Exception as e:
+                        # Catch-all for other errors while processing the (assumed) valid JSON
+                        st.error(f"Error processing assistant's response: {e}")
+                        st.markdown(full_response_content) # Display raw content as fallback
+                        st.session_state.messages.append(
+                            {"role": "assistant", "content": full_response_content, "type": "text"}
+                        )
                 else:
                     error_message = "No response received from the agent."
                     st.error(error_message)

@@ -164,12 +164,12 @@ Performance Goal: Your generated SQL queries must aim for >90% accuracy in corre
 
 # Create the agent instance
 data_agent = LlmAgent(
-    name="data_agent",
-    # Using a powerful model is key for good SQL generation
+    name="DataAgent",
     model="gemini-2.5-flash-preview-05-20",
     instruction=DATA_AGENT_INSTRUCTION,
     description="Generates and executes SQL queries against the ENEM database.",
     # Provide the agent with the tool it can use
     tools=[execute_sql],
+    output_key="data_agent_output_key"
 )
 logger.info("Data Agent initialized.")
