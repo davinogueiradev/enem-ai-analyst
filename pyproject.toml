@@ -26,6 +26,8 @@ altair = "^5.5.0"
 ruff = "^0.11.13"
 mypy = "^1.16.0"
 watchdog = "^6.0.0"
+google-adk = {extras = ["eval"], version = "^1.2.1"}
+pytest-asyncio = "^1.0.0"
 
 [tool.ruff]
 line-length = 120
