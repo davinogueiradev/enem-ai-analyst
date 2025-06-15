@@ -1,4 +1,8 @@
-from google.adk.agents import LlmAgent
+import os
+
+from autogen_agentchat.agents import AssistantAgent
+from autogen_core.models import ModelInfo
+from autogen_ext.models.openai import OpenAIChatCompletionClient
 
 ANALYSIS_AGENT_INSTRUCTION = """
 # ROLE AND GOAL
@@ -63,11 +67,17 @@ Your output **MUST** be a single, well-structured JSON object with two top-level
 
 """
 
-# Create the agent instance
-analysis_agent = LlmAgent(
-    name="descriptive_analyzer_agent",
+model_client = OpenAIChatCompletionClient(
     model="gemini-2.5-flash-preview-05-20",
-    instruction=ANALYSIS_AGENT_INSTRUCTION,
+    model_info=ModelInfo(vision=True, function_calling=True, json_output=True, family="unknown", structured_output=True),
+    api_key=os.environ.get("GEMINI_API_KEY"),
+)
+
+# Create the agent instance
+analysis_agent = AssistantAgent(
+    name="descriptive_analyzer_agent",
+    model_client=model_client,
+    system_message=ANALYSIS_AGENT_INSTRUCTION,
+    description="Generate analysis from data",
     tools=[],
-    output_key="descriptive_analyzer_agent_output_key"
 )

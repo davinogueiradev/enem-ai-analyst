@@ -1,12 +1,21 @@
 import logging
+import os
+
+from autogen_agentchat.agents import AssistantAgent, MessageFilterAgent, MessageFilterConfig, PerSourceFilter
+
+from autogen_agentchat.conditions import MaxMessageTermination, TextMentionTermination
+from autogen_agentchat.teams import SelectorGroupChat
+from autogen_core.models import ModelInfo
+from autogen_ext.models.openai import OpenAIChatCompletionClient
+from autogen_agentchat.teams import DiGraphBuilder, GraphFlow
+from autogen_agentchat.agents import UserProxyAgent
 
 from dotenv import load_dotenv
-from google.adk.agents import LlmAgent
 
 from .sub_agents.analysis_agent import analysis_agent
 from .sub_agents.data_agent import data_agent
-from .sub_agents.visualization_agent import visualization_agent
 from .sub_agents.narrative_agent import narrative_agent
+from .sub_agents.visualization_agent import visualization_agent
 
 load_dotenv()
 
@@ -65,19 +74,42 @@ You have the following agents at your disposal. You MUST delegate tasks to them 
 - You **MUST NOT** perform specialist tasks yourself. You do not write SQL, you do not calculate statistics, you do not create charts, and you do not write the final narrative from scratch. Your role is to manage those who do.
 - You **MUST** hide the complexity of the inner-agent communication from the user. The user should only see their initial question and your final, synthesized answer, not the back-and-forth between the agents.
 - Your thinking process (the plan) should be kept in your internal monologue, not exposed to the user unless they ask you to "show your work."
+- The final, synthesized answer delivered to the user **MUST** be in Brazilian Portuguese.
+
+When assigning tasks, use this format:
+1. <agent> : <task>
+
+After all tasks are complete, summarize the findings and end with "FINALIZOU".
 
 """
 
+text_mention_termination = TextMentionTermination("FINALIZOU")
+max_messages_termination = MaxMessageTermination(max_messages=25)
+termination = text_mention_termination | max_messages_termination
 
-# Create the Orchestrator agent instance
-root_agent = LlmAgent(
-    name="enem_ai_analyst_orchestrator",
-    model="gemini-2.5-pro-preview-06-05", # Using a powerful model for orchestration logic
-    instruction=ORCHESTRATOR_INSTRUCTION,
-    description=(
-        "Understands user requests, routes them to specialized sub-agents (Data, Analysis,"
-        " Visualization), and synthesizes responses for Streamlit."
-    ),
-    sub_agents=[data_agent, analysis_agent, visualization_agent, narrative_agent],
+model_client = OpenAIChatCompletionClient(
+    model="gemini-2.5-pro-preview-06-05",
+    model_info=ModelInfo(vision=True, function_calling=True, json_output=True, family="unknown", structured_output=True),
+    api_key=os.environ.get("GEMINI_API_KEY"),
 )
+
+user_proxy = UserProxyAgent(
+    name="user_proxy",
+    human_input_mode="NEVER", # Can be "TERMINATE" or "ALWAYS" for interactive scenarios
+    max_consecutive_auto_reply=0, # Important for user proxy to not auto-reply
+    code_execution_config=False, # No code execution for the user proxy
+    description="A proxy for the human user.",
+)
+
+agents = [
+    user_proxy,
+    data_agent,
+    analysis_agent,
+    visualization_agent,
+    narrative_agent,
+]
+
+
+root_agent = None
+
 logger.info("Orchestrator Agent (root_agent) initialized.")

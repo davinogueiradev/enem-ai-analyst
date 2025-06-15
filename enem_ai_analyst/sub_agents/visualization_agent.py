@@ -1,8 +1,11 @@
 import json
 import logging
+import os
 from typing import Any, Dict, List, Optional
 
-from google.adk.agents import LlmAgent
+from autogen_agentchat.agents import AssistantAgent
+from autogen_core.models import ModelInfo
+from autogen_ext.models.openai import OpenAIChatCompletionClient
 from pydantic import BaseModel, Field
 
 from enem_ai_analyst.tools.chart_validation import validate_chart_spec
@@ -138,13 +141,19 @@ Your output **MUST** be a single JSON object containing two top-level keys: `"re
 4.  **NO NARRATIVE:** You do not interpret or explain the *meaning* or *implications* of the chart's insights. You only provide the chart specification and a brief justification for your design choice. The Narrative Agent is responsible for telling the story.
 
 """
-# Create the agent instance
-visualization_agent = LlmAgent(
-    name="visualization_agent",
+
+model_client = OpenAIChatCompletionClient(
     model="gemini-2.5-flash-preview-05-20",
-    instruction=VISUALIZATION_AGENT_INSTRUCTION,
+    model_info=ModelInfo(vision=True, function_calling=True, json_output=True, family="unknown", structured_output=True),
+    api_key=os.environ.get("GEMINI_API_KEY"),
+)
+
+# Create the agent instance
+visualization_agent = AssistantAgent(
+    name="visualization_agent",
+    model_client=model_client,
+    system_message=VISUALIZATION_AGENT_INSTRUCTION,
     description="Generates specifications for data visualizations by calling the `generate_chart` tool based on provided datasets and user requests.",
     tools=[generate_chart], # Provide the agent with the tool it can use
-    output_key="visualization_agent_output_key"
 )
 logger.info("Visualization Agent initialized.")

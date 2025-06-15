@@ -1,7 +1,11 @@
-from google.adk.agents import LlmAgent
-from ..tools.postgres_mcp import execute_sql
-
 import logging
+import os
+
+from autogen_agentchat.agents import AssistantAgent
+from autogen_core.models import ModelInfo
+from autogen_ext.models.openai import OpenAIChatCompletionClient
+
+from ..tools.postgres_mcp import execute_sql
 
 # Configure logging for the data agent
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -179,14 +183,19 @@ You **MUST STRICTLY** and **EXCLUSIVELY** use the tables, columns, and relations
 
 """
 
-# Create the agent instance
-data_agent = LlmAgent(
-    name="data_engineer_agent",
+model_client = OpenAIChatCompletionClient(
     model="gemini-2.5-flash-preview-05-20",
-    instruction=DATA_AGENT_INSTRUCTION,
+    model_info=ModelInfo(vision=True, function_calling=True, json_output=True, family="unknown", structured_output=True),
+    api_key=os.environ.get("GEMINI_API_KEY"),
+)
+
+# Create the agent instance
+data_agent = AssistantAgent(
+    name="data_engineer_agent",
+    model_client=model_client,
+    system_message=DATA_AGENT_INSTRUCTION,
     description="Generates and executes SQL queries against the ENEM database.",
     # Provide the agent with the tool it can use
     tools=[execute_sql],
-    output_key="data_engineer_agent_output_key"
 )
 logger.info("Data Agent initialized.")

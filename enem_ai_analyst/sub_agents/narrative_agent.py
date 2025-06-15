@@ -1,4 +1,8 @@
-from google.adk.agents import LlmAgent
+import os
+
+from autogen_agentchat.agents import AssistantAgent
+from autogen_core.models import ModelInfo
+from autogen_ext.models.openai import OpenAIChatCompletionClient
 
 NARRATIVE_AGENT_INSTRUCTION = """
 # ROLE AND GOAL
@@ -71,13 +75,21 @@ The top three Natural Sciences scores in Joinville are **998.5**, **992.1**, and
 4.  **OBJECTIVE AND NEUTRAL TONE:** Avoid emotional or subjective language.
 5.  **CAREFUL LANGUAGE ON CAUSATION:** Use phrases like "is associated with" instead of "is caused by."
 
+The final, answer delivered to the user **MUST** be in Brazilian Portuguese.
+
 """
 
-# Create the agent instance
-narrative_agent = LlmAgent(
-    name="narrative_agent",
+model_client = OpenAIChatCompletionClient(
     model="gemini-2.5-flash-preview-05-20",
-    instruction=NARRATIVE_AGENT_INSTRUCTION,
+    model_info=ModelInfo(vision=True, function_calling=True, json_output=True, family="unknown", structured_output=True),
+    api_key=os.environ.get("GEMINI_API_KEY"),
+)
+
+# Create the agent instance
+narrative_agent = AssistantAgent(
+    name="narrative_agent",
+    model_client=model_client,
+    system_message=NARRATIVE_AGENT_INSTRUCTION,
+    description="Generate data storyteller",
     tools=[],
-    output_key="narrative_agent_output_key"
 )
