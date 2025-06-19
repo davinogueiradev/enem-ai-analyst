@@ -1,15 +1,13 @@
 import logging
 import os
 
-from autogen_agentchat.agents import AssistantAgent, MessageFilterAgent, MessageFilterConfig, PerSourceFilter
-
+from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.conditions import MaxMessageTermination, TextMentionTermination
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_core.models import ModelInfo
 from autogen_ext.models.openai import OpenAIChatCompletionClient
-from autogen_agentchat.teams import DiGraphBuilder, GraphFlow
-from autogen_agentchat.agents import UserProxyAgent
 
+# from autogen_agentchat.agents import UserProxyAgent
 from dotenv import load_dotenv
 
 from .sub_agents.analysis_agent import analysis_agent
@@ -79,11 +77,13 @@ You have the following agents at your disposal. You MUST delegate tasks to them 
 When assigning tasks, use this format:
 1. <agent> : <task>
 
-After all tasks are complete, summarize the findings and end with "FINALIZOU".
+After all tasks are complete, summarize the findings and end with "TERMINATE".
 
 """
 
-text_mention_termination = TextMentionTermination("FINALIZOU")
+ 
+
+text_mention_termination = TextMentionTermination("TERMINATE")
 max_messages_termination = MaxMessageTermination(max_messages=25)
 termination = text_mention_termination | max_messages_termination
 
@@ -93,23 +93,42 @@ model_client = OpenAIChatCompletionClient(
     api_key=os.environ.get("GEMINI_API_KEY"),
 )
 
-user_proxy = UserProxyAgent(
-    name="user_proxy",
-    human_input_mode="NEVER", # Can be "TERMINATE" or "ALWAYS" for interactive scenarios
-    max_consecutive_auto_reply=0, # Important for user proxy to not auto-reply
-    code_execution_config=False, # No code execution for the user proxy
-    description="A proxy for the human user.",
+
+planning_agent = AssistantAgent(
+    name="PlanningAgent",
+    description="An agent for planning tasks, should be first to engage",
+    model_client=model_client,
+    system_message="""You are a planning agent. Break down tasks into subtasks.
+    Your team members are:
+    - `data_engineer_agent`: Translates analytical requirements into PostgreSQL queries, fetches data from the database, and performs data cleaning, validation, and simple feature engineering.
+    - `descriptive_analyzer_agent`: Performs statistical analysis on a given dataset.
+    - `visualization_agent`: Creates data visualizations based on provided data.
+    - `narrative_agent`: Weaves together statistical insights and visualizations into a clear, easy-to-understand text narrative.
+    
+    Plan tasks in this format:
+    1. data_engineer_agent: <translate query task>
+    2. descriptive_analyzer_agent: <analysis for data task>
+    3. visualization_agent: <visualization for analysis task>
+    4. narrative_agent: <narrative for visualization task>
+    
+    After all tasks complete, summarize and say 'TERMINATE'."""
 )
 
-agents = [
-    user_proxy,
-    data_agent,
-    analysis_agent,
-    visualization_agent,
-    narrative_agent,
-]
+# user_proxy = UserProxyAgent(
+#     name="user_proxy",
+#     human_input_mode="NEVER", # Can be "TERMINATE" or "ALWAYS" for interactive scenarios
+#     max_consecutive_auto_reply=0, # Important for user proxy to not auto-reply
+#     code_execution_config=False, # No code execution for the user proxy
+#     description="A proxy for the human user.",
+# )
 
+team = SelectorGroupChat(
+    participants=[planning_agent, data_agent, analysis_agent, visualization_agent, narrative_agent],
+    model_client=model_client,  # Selector model
+    termination_condition=termination,
+    allow_repeated_speaker=True,
+)
 
-root_agent = None
+root_agent = team
 
 logger.info("Orchestrator Agent (root_agent) initialized.")
