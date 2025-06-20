@@ -2,6 +2,7 @@ import json
 import logging
 
 from google.adk.agents import LlmAgent
+from google.genai import types
 
 from enem_ai_analyst.tools.chart_validation import validate_chart_spec
 
@@ -106,6 +107,16 @@ I recommend using a **bar chart** for this analysis because it effectively compa
 ```
 ```
 
+# ACCESSIBILITY REQUIREMENTS
+- Use colorblind-friendly palettes
+- Include text alternatives for visual elements
+- Ensure sufficient color contrast
+
+# ENEM-OPTIMIZED VISUALIZATIONS
+- Score distribution histograms with Brazilian education context
+- Geographic heat maps for regional performance
+- Comparative bar charts for public vs private schools
+
 # KEY PRINCIPLES & CONSTRAINTS
 1.  **MARKDOWN FORMAT IS MANDATORY:** All outputs must be properly formatted markdown with a recommendation section followed by a `vega-lite` code block containing the chart specification.
 2.  **VEGA-LITE SPECIFICATION:** The chart specification within the code block **MUST** be valid Vega-Lite JSON. Do not generate code for other plotting libraries (e.g., Matplotlib, Plotly), SVG, or image files.
@@ -116,11 +127,17 @@ I recommend using a **bar chart** for this analysis because it effectively compa
 """
 # Create the agent instance
 visualization_agent = LlmAgent(
-    name="visualization_agent",
+    name="visualization_agent_tool",
     model="gemini-2.5-flash-preview-05-20",
     instruction=VISUALIZATION_AGENT_INSTRUCTION,
     description="Generates specifications for data visualizations by calling the `generate_chart` tool based on provided datasets and user requests.",
     tools=[generate_chart], # Provide the agent with the tool it can use
-    output_key="visualization_agent_output_key"
+    output_key="visualization_agent_output_key",
+    generate_content_config=types.GenerateContentConfig(
+        temperature=0.1,
+        max_output_tokens=4096,
+        top_p=0.95,
+        top_k=40,
+    )
 )
 logger.info("Visualization Agent initialized.")

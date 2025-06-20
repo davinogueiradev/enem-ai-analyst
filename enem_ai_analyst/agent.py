@@ -8,6 +8,7 @@ from .sub_agents.analysis_agent import analysis_agent
 from .sub_agents.data_agent import data_agent
 from .sub_agents.visualization_agent import visualization_agent
 from .sub_agents.narrative_agent import narrative_agent
+from google.genai import types
 
 load_dotenv()
 
@@ -23,6 +24,12 @@ You have these specialist agents available as tools:
 - descriptive_analyzer_agent_tool: Analyzes data statistically  
 - visualization_agent_tool: Creates charts and visualizations
 - narrative_agent_tool: Writes comprehensive reports
+
+# ERROR HANDLING
+If any agent fails:
+- Identify which step failed
+- Provide clear error message to user
+- Suggest alternative approaches when possible
 
 # WORKFLOW
 Use these agent tools in sequence to answer user questions about ENEM data.
@@ -40,5 +47,11 @@ root_agent = LlmAgent(
     instruction=ORCHESTRATOR_INSTRUCTION,
     description="Orchestrates specialized agents for ENEM data analysis.",
     tools=[data_agent_tool, analysis_agent_tool, visualization_agent_tool, narrative_agent_tool],
+    generate_content_config=types.GenerateContentConfig(
+        temperature=0.1,
+        max_output_tokens=4096,
+        top_p=0.95,
+        top_k=40,
+    )
 )
 logger.info("Orchestrator Agent (root_agent) initialized.")

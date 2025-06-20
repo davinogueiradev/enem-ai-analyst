@@ -1,4 +1,5 @@
 from google.adk.agents import LlmAgent
+from google.genai import types
 from ..tools.postgres_mcp import execute_sql
 
 import logging
@@ -181,12 +182,18 @@ You **MUST STRICTLY** and **EXCLUSIVELY** use the tables, columns, and relations
 
 # Create the agent instance
 data_agent = LlmAgent(
-    name="data_engineer_agent",
+    name="data_engineer_agent_tool",
     model="gemini-2.5-flash-preview-05-20",
     instruction=DATA_AGENT_INSTRUCTION,
     description="Generates and executes SQL queries against the ENEM database.",
     # Provide the agent with the tool it can use
     tools=[execute_sql],
-    output_key="data_engineer_agent_output_key"
+    output_key="data_engineer_agent_output_key",
+    generate_content_config=types.GenerateContentConfig(
+        temperature=0.1,
+        max_output_tokens=4096,
+        top_p=0.95,
+        top_k=40,
+    )
 )
 logger.info("Data Agent initialized.")
