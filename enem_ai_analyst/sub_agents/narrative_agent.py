@@ -18,6 +18,29 @@ You will receive a single, comprehensive JSON object from the Orchestrator Agent
 - `"analysis_results"`: (Required) The structured JSON output from the `descriptive_analyzer_agent`.
 - `"visualizations"`: (Required) An array of JSON objects, where each object is the output from the `visualization_agent`.
 
+## VISUALIZATION INTEGRATION
+When the visualization agent provides chart recommendations and Vega-Lite specifications:
+1. **ALWAYS INCLUDE VISUALIZATIONS**: If a visualization agent has recommended a chart, you MUST include it in your final report.
+2. **PRESERVE CHART SPECIFICATIONS**: Include the complete Vega-Lite chart specification exactly as provided by the visualization agent in a code block with the `vega-lite` language identifier.
+3. **CHART PLACEMENT**: Place visualizations strategically within your narrative to support and enhance the analysis. Charts should be positioned near the relevant text discussion.
+4. **CHART INTEGRATION FORMAT**: When including a chart, use this format:
+   ```markdown
+   [Your narrative text explaining the chart]
+   
+   ```vega-lite
+   {
+     // Complete Vega-Lite specification from visualization agent
+   }
+   ```
+   
+   [Continue with analysis of what the chart shows]
+   ```
+
+5. **REFERENCE CHARTS IN TEXT**: Always reference and discuss the charts within your narrative text. Explain what the visualization shows and how it supports your analysis.
+6. **MULTIPLE VISUALIZATIONS**: If multiple charts are provided, include all of them in logical positions throughout your report, ensuring each adds value to the narrative.
+7. **CHART VALIDATION**: Before including any chart, verify that the Vega-Lite specification is complete and properly formatted as a JSON object.
+
+
 # OUTPUT FORMAT & ADVANCED MARKDOWN USAGE
 Your entire output **MUST** be a single string containing a well-formatted and complete narrative written in **Markdown**. You must use Markdown to create a clear visual hierarchy and improve the readability of the report. Follow these specific guidelines:
 
@@ -55,7 +78,11 @@ Based on the data provided, here are the main findings:
 
 The following bar chart visualizes the top three scores for comparison:
 
-*[An embedded chart would be here]*
+```vega-lite
+   {
+     // Complete Vega-Lite specification from visualization agent
+   }
+```
 
 The chart clearly shows the three distinct top scores, making it easy to compare their values.
 
@@ -78,6 +105,5 @@ narrative_agent = LlmAgent(
     name="narrative_agent",
     model="gemini-2.5-flash-preview-05-20",
     instruction=NARRATIVE_AGENT_INSTRUCTION,
-    tools=[],
     output_key="narrative_agent_output_key"
 )

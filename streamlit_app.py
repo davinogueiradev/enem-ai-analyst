@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 
 import pandas as pd
 import streamlit as st
@@ -13,91 +14,95 @@ APP_NAME = "google_search_agent"
 USER_ID = "user12345"
 SESSION_ID = "12345"
 
-# Session and Runner
-session_service = InMemorySessionService()
-asyncio.run(session_service.create_session(app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID))
-runner = Runner(agent=root_agent, app_name=APP_NAME, session_service=session_service)
+def extract_vega_lite_from_text(text):
+    """Extract Vega-Lite JSON from markdown code blocks"""
+    # Look for vega-lite code blocks
+    vega_pattern = r'```vega-lite\n(.*?)\n```'
+    matches = re.findall(vega_pattern, text, re.DOTALL)
 
-st.set_page_config(page_title="ENEM AI Analyst", layout="wide")
+    if not matches:
+        json_pattern = r'```json\n(.*?)\n```'
+        matches = re.findall(json_pattern, text, re.DOTALL)
+    
+    charts = []
+    for match in matches:
+        try:
+            chart_spec = json.loads(match.strip())
+            charts.append(chart_spec)
+        except json.JSONDecodeError as e:
+            st.error(f"Failed to parse Vega-Lite JSON: {e}")
+    
+    return charts
 
-st.title("🤖 ENEM AI Analyst")
-st.caption("Ask me anything about the ENEM data!")
 
-def display_message_content(message):
-    """Display a message based on its type"""
-    st.markdown(message["content"])
-
-
-def display_structured_assistant_response(response_data):
-    """Displays the content from a parsed structured JSON response from the assistant."""
-    if "summary" in response_data and response_data["summary"]:
-        st.markdown(message["content"])
-
-    if "visualization" in response_data:
-        viz = response_data["visualization"]
-        viz_type = viz.get("type")
-
-        if viz_type == "chart" and "spec" in viz:
+def display_message_content(message_text):
+    """Display message content and extract/render any charts"""
+    # First, extract and display any Vega-Lite charts
+    charts = extract_vega_lite_from_text(message_text)
+    
+    if charts:
+        for i, chart in enumerate(charts):
             try:
-                chart_spec = viz["spec"]
-                st.altair_chart(chart_spec, use_container_width=True)
+
+                if chart.get("spec"):
+                    chart = chart.pop("spec")
+
+                chart_data = chart.pop("data", {})
+                data = pd.DataFrame(chart_data["values"])
+                chart_spec = chart
+
+                st.vega_lite_chart(data, chart_spec, use_container_width=True)
             except Exception as e:
-                st.error(f"Failed to render chart from structured response: {e}")
-                st.json(viz.get("spec", {})) # Show the spec if rendering fails
-        elif viz_type == "table" and "data" in viz: # Assuming table data is in viz["data"]
-            try:
-                table_data = viz["data"]
-                if isinstance(table_data, list):
-                    df = pd.DataFrame(table_data)
-                    st.table(df)
-                else:
-                    st.warning("Table data is not in the expected list format.")
-                    st.json(table_data)
-            except Exception as e:
-                st.error(f"Failed to render table from structured response: {e}")
-                st.json(viz.get("data", {}))
-        elif viz_type and viz_type not in ["chart", "table", "text_only", "none"]:
-             st.warning(f"Unsupported visualization type: {viz_type}")
+                st.error(f"Failed to render chart {i+1}: {e}")
+                st.json(chart)
+    
+    # Remove the vega-lite code blocks from the text and display the rest
+    clean_text = re.sub(r'```vega-lite\n.*?\n```', '', message_text, flags=re.DOTALL)
+    clean_text = clean_text.strip()
 
-    if "debug_info" in response_data:
-        debug = response_data["debug_info"]
-        if debug.get("show_sql_button") and "sql_query" in debug:
-            with st.expander("Show SQL Query"):
-                st.code(debug["sql_query"], language="sql")
+    if not clean_text:
+        clean_text = re.sub(r'```json\n.*?\n```', '', message_text, flags=re.DOTALL)
+    
+    if clean_text:
+        st.markdown(clean_text)
 
+def main() -> None:
+    # Session and Runner
+    session_service = InMemorySessionService()
+    asyncio.run(session_service.create_session(app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID))
+    runner = Runner(agent=root_agent, app_name=APP_NAME, session_service=session_service)
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.set_page_config(page_title="ENEM AI Analyst", layout="wide")
 
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    st.title("🤖 ENEM AI Analyst")
+    st.caption("Ask me anything about the ENEM data!")
 
-# React to user input
-if prompt := st.chat_input("What would you like to know?"):
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt, "type": "text"})
-    # Display user message in chat message container
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    # initialize chat history
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = []
 
-    # Display assistant response in chat message container
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response_content = ""
-        with st.spinner("Thinking..."):
-            try:
-                content = types.Content(role="user", parts=[types.Part(text=prompt)])
-                events = runner.run(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
+    # displying chat history messages
+    for message in st.session_state["messages"]:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-                for event in events:
-                    if event.is_final_response():
-                        for part in event.content.parts:
-                            st.markdown(part.text)
+    prompt = st.chat_input("What would you like to know?")
+    if prompt:
+        st.session_state["messages"].append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-            except Exception as e:
-                error_message = f"An error occurred: {e}"
-                message_placeholder.error(error_message)
-                st.session_state.messages.append({"role": "assistant", "content": error_message, "type": "text"})
+        content = types.Content(role="user", parts=[types.Part(text=prompt)])
+        events = runner.run(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
+
+        for event in events:
+            if event.is_final_response():
+                print(F"MYDEBUG: parts {len(event.content.parts)}")
+                for part in event.content.parts:
+                    display_message_content(part.text)
+                    st.session_state["messages"].append(
+                        {"role": "assistant", "content": part.text, "type": "text"}
+                    )
+
+if __name__ == "__main__":
+    main()

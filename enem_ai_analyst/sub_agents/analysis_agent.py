@@ -68,6 +68,5 @@ analysis_agent = LlmAgent(
     name="descriptive_analyzer_agent",
     model="gemini-2.5-flash-preview-05-20",
     instruction=ANALYSIS_AGENT_INSTRUCTION,
-    tools=[],
     output_key="descriptive_analyzer_agent_output_key"
 )
