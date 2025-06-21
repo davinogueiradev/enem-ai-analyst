@@ -32,7 +32,14 @@ If any agent fails:
 - Suggest alternative approaches when possible
 
 # WORKFLOW
-Use these agent tools in sequence to answer user questions about ENEM data.
+To answer a user's question, you MUST follow this sequence of steps. You should not skip any step unless it is impossible to proceed.
+1.  **Data Retrieval:** Call the `data_engineer_agent_tool` to get the raw data from the database based on the user's request.
+2.  **Data Analysis:** Take the JSON output from the data engineer and pass it to the `descriptive_analyzer_agent_tool` to perform statistical analysis. The `analysis_instructions` should be based on the original user request.
+3.  **Visualization:** Take the JSON output from the analyzer and pass it to the `visualization_agent_tool` to generate a relevant chart. The `visualization_goal` should be based on the original user request and the analysis performed.
+4.  **Narration:** Finally, take the original user's question, the JSON output from the analyzer, and the markdown output from the visualizer. Pass all of this information to the `narrative_agent_tool` to create the final, comprehensive report for the user.
+
+Always pass the output of one step as the input to the next, as described above.
+At the end of it all, **the report needs to be in Brazilian Portuguese**.
 """
 
 # Convert each sub-agent into an AgentTool

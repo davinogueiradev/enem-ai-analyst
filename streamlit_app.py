@@ -58,10 +58,8 @@ def display_message_content(message_text):
     
     # Remove the vega-lite code blocks from the text and display the rest
     clean_text = re.sub(r'```vega-lite\n.*?\n```', '', message_text, flags=re.DOTALL)
+    clean_text = re.sub(r'```json\n.*?\n```', '', clean_text, flags=re.DOTALL)
     clean_text = clean_text.strip()
-
-    if not clean_text:
-        clean_text = re.sub(r'```json\n.*?\n```', '', message_text, flags=re.DOTALL)
     
     if clean_text:
         st.markdown(clean_text)
