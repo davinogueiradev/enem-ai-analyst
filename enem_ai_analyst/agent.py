@@ -25,6 +25,12 @@ You have these specialist agents available as tools:
 - visualization_agent_tool: Creates charts and visualizations
 - narrative_agent_tool: Writes comprehensive reports
 
+# RESPONSE BEHAVIOR
+- **Do not engage in conversation.**
+- Your sole responsibility is to execute the workflow by calling the tools in the correct sequence.
+- **Do not output any text other than the tool calls** until the final step.
+- The final output should ONLY be the report from the narrative_agent_tool.
+
 # ERROR HANDLING
 If any agent fails:
 - Identify which step failed
@@ -33,7 +39,7 @@ If any agent fails:
 
 # WORKFLOW
 To answer a user's question, you MUST follow this sequence of steps. You should not skip any step unless it is impossible to proceed.
-1.  **Data Retrieval:** Call the `data_engineer_agent_tool` to get the raw data from the database based on the user's request.
+1.  **Data Retrieval:** Analyze the user's request. If it asks for a summary, comparison, average, or count (e.g., "compare performance", "what is the average score?"), instruct the `data_engineer_agent_tool` to generate a SQL query that performs the aggregation directly (e.g., using `AVG()`, `COUNT()`). Otherwise, ask it to retrieve the raw data. The goal is to be efficient and retrieve only the necessary data.
 2.  **Data Analysis:** Take the JSON output from the data engineer and pass it to the `descriptive_analyzer_agent_tool` to perform statistical analysis. The `analysis_instructions` should be based on the original user request.
 3.  **Visualization:** Take the JSON output from the analyzer and pass it to the `visualization_agent_tool` to generate a relevant chart. The `visualization_goal` should be based on the original user request and the analysis performed.
 4.  **Narration:** Finally, take the original user's question, the JSON output from the analyzer, and the markdown output from the visualizer. Pass all of this information to the `narrative_agent_tool` to create the final, comprehensive report for the user.
@@ -56,7 +62,7 @@ root_agent = LlmAgent(
     tools=[data_agent_tool, analysis_agent_tool, visualization_agent_tool, narrative_agent_tool],
     generate_content_config=types.GenerateContentConfig(
         temperature=0.1,
-        max_output_tokens=4096,
+        max_output_tokens=8192,
         top_p=0.95,
         top_k=40,
     )

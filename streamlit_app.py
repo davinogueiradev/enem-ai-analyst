@@ -10,9 +10,9 @@ from google.genai import types
 
 from enem_ai_analyst.agent import root_agent
 
-APP_NAME = "google_search_agent"
+APP_NAME = "enem_ai_analyst_app"
 USER_ID = "user12345"
-SESSION_ID = "12345"
+SESSION_ID = "session12345"
 
 def extract_vega_lite_from_text(text):
     """Extract Vega-Lite JSON from markdown code blocks"""
@@ -38,6 +38,14 @@ def extract_vega_lite_from_text(text):
 def display_message_content(message_text):
     """Display message content and extract/render any charts"""
     # First, extract and display any Vega-Lite charts
+    # Remove the vega-lite code blocks from the text and display the rest
+    clean_text = re.sub(r'```vega-lite\n.*?\n```', '', message_text, flags=re.DOTALL)
+    clean_text = re.sub(r'```json\n.*?\n```', '', clean_text, flags=re.DOTALL)
+    clean_text = clean_text.strip()
+    
+    if clean_text:
+        st.markdown(clean_text)
+
     charts = extract_vega_lite_from_text(message_text)
     
     if charts:
@@ -55,52 +63,53 @@ def display_message_content(message_text):
             except Exception as e:
                 st.error(f"Failed to render chart {i+1}: {e}")
                 st.json(chart)
-    
-    # Remove the vega-lite code blocks from the text and display the rest
-    clean_text = re.sub(r'```vega-lite\n.*?\n```', '', message_text, flags=re.DOTALL)
-    clean_text = re.sub(r'```json\n.*?\n```', '', clean_text, flags=re.DOTALL)
-    clean_text = clean_text.strip()
-    
-    if clean_text:
-        st.markdown(clean_text)
 
 def main() -> None:
-    # Session and Runner
-    session_service = InMemorySessionService()
-    asyncio.run(session_service.create_session(app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID))
-    runner = Runner(agent=root_agent, app_name=APP_NAME, session_service=session_service)
-
     st.set_page_config(page_title="ENEM AI Analyst", layout="wide")
 
     st.title("🤖 ENEM AI Analyst")
     st.caption("Ask me anything about the ENEM data!")
 
-    # initialize chat history
+    # Initialize session state for messages and runner
     if "messages" not in st.session_state:
         st.session_state["messages"] = []
+    if "runner" not in st.session_state:
+        session_service = InMemorySessionService()
+        # Create session only once
+        asyncio.run(session_service.create_session(app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID))
+        st.session_state["runner"] = Runner(agent=root_agent, app_name=APP_NAME, session_service=session_service)
+
+    runner = st.session_state["runner"]
 
     # displying chat history messages
     for message in st.session_state["messages"]:
         with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+            display_message_content(message["content"])
 
     prompt = st.chat_input("What would you like to know?")
     if prompt:
+        # Add user message to history and display it
         st.session_state["messages"].append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        content = types.Content(role="user", parts=[types.Part(text=prompt)])
-        events = runner.run(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
+        # Get and display assistant response
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                content = types.Content(role="user", parts=[types.Part(text=prompt)])
+                events = runner.run(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
 
-        for event in events:
-            if event.is_final_response():
-                print(F"MYDEBUG: parts {len(event.content.parts)}")
-                for part in event.content.parts:
-                    display_message_content(part.text)
-                    st.session_state["messages"].append(
-                        {"role": "assistant", "content": part.text, "type": "text"}
-                    )
+                full_response = ""
+                for event in events:
+                    if event.is_final_response() and event.content:
+                        for part in event.content.parts:
+                            full_response += part.text
+                
+                if full_response:
+                    display_message_content(full_response)
+                    st.session_state["messages"].append({"role": "assistant", "content": full_response})
+                else:
+                    st.error("Sorry, I couldn't generate a response.")
 
 if __name__ == "__main__":
     main()

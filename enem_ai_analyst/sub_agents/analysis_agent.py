@@ -93,7 +93,7 @@ analysis_agent = LlmAgent(
     output_key="descriptive_analyzer_agent_output_key",
     generate_content_config=types.GenerateContentConfig(
         temperature=0.1,
-        max_output_tokens=4096,
+        max_output_tokens=8192,
         top_p=0.95,
         top_k=40,
     )
