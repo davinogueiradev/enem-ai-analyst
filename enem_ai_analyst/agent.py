@@ -42,9 +42,12 @@ To answer a user's question, you MUST follow this sequence of steps. You should 
 1.  **Data Retrieval:** Analyze the user's request. If it asks for a summary, comparison, average, or count (e.g., "compare performance", "what is the average score?"), instruct the `data_engineer_agent_tool` to generate a SQL query that performs the aggregation directly (e.g., using `AVG()`, `COUNT()`). Otherwise, ask it to retrieve the raw data. The goal is to be efficient and retrieve only the necessary data.
 2.  **Data Analysis:** Take the JSON output from the data engineer and pass it to the `descriptive_analyzer_agent_tool` to perform statistical analysis. The `analysis_instructions` should be based on the original user request.
 3.  **Visualization:** Take the JSON output from the analyzer and pass it to the `visualization_agent_tool` to generate a relevant chart. The `visualization_goal` should be based on the original user request and the analysis performed.
-4.  **Narration:** Finally, take the original user's question, the JSON output from the analyzer, and the markdown output from the visualizer. Pass all of this information to the `narrative_agent_tool` to create the final, comprehensive report for the user.
+*   If the `suggestions` array contains one or more entries that explicitly recommend creating a chart or visualization (e.g., phrases like "I suggest creating X chart", "visualize Y", "plot Z", "create a heatmap"), then call the `visualization_agent_tool`. The `visualization_goal` for this tool should be derived directly from these visualization suggestions.
+*   If no such visualization suggestions are present in the `suggestions` array, or if the `suggestions` array is empty, **skip** the `visualization_agent_tool` call. In this case, you will pass an empty array `[]` for the `visualizations` parameter to the `narrative_agent_tool` in the next step.
+4.  **Narration:** Finally, take the original user's question, the JSON output from the analyzer, and the markdown output from the visualizer (or the empty array `[]` if no visualization was generated). Pass all of this information to the `narrative_agent_tool` to create the final, comprehensive report for the user.
 
 Always pass the output of one step as the input to the next, as described above.
+
 At the end of it all, **the report needs to be in Brazilian Portuguese**.
 """
 
