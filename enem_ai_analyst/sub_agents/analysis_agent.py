@@ -81,7 +81,7 @@ If analysis cannot be performed (missing data, wrong data types), return:
 # Create the agent instance
 analysis_agent = LlmAgent(
     name="descriptive_analyzer_agent_tool",
-    model="gemini-2.5-flash-preview-05-20",
+    model="gemini-2.5-flash",
     instruction=ANALYSIS_AGENT_INSTRUCTION,
     output_key="descriptive_analyzer_agent_output_key",
     generate_content_config=types.GenerateContentConfig(

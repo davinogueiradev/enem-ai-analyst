@@ -108,7 +108,7 @@ If inputs contain errors or missing data:
 # Create the agent instance
 narrative_agent = LlmAgent(
     name="narrative_agent_tool",
-    model="gemini-2.5-flash-preview-05-20",
+    model="gemini-2.5-flash",
     instruction=NARRATIVE_AGENT_INSTRUCTION,
     output_key="narrative_agent_output_key",
     generate_content_config=types.GenerateContentConfig(

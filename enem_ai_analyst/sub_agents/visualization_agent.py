@@ -128,7 +128,7 @@ I recommend using a **bar chart** for this analysis because it effectively compa
 # Create the agent instance
 visualization_agent = LlmAgent(
     name="visualization_agent_tool",
-    model="gemini-2.5-flash-preview-05-20",
+    model="gemini-2.5-flash",
     instruction=VISUALIZATION_AGENT_INSTRUCTION,
     description="Generates specifications for data visualizations by calling the `generate_chart` tool based on provided datasets and user requests.",
     tools=[generate_chart], # Provide the agent with the tool it can use

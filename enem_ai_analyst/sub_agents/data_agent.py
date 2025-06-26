@@ -42,7 +42,7 @@ You will receive a single JSON object from the Orchestrator Agent containing the
 # Create the agent instance
 data_agent = LlmAgent(
     name="data_engineer_agent_tool",
-    model="gemini-2.5-flash-preview-05-20",
+    model="gemini-2.5-flash",
     instruction=DATA_AGENT_INSTRUCTION,
     description="Generates and executes SQL queries against the database.",
     # Provide the agent with the tool it can use
