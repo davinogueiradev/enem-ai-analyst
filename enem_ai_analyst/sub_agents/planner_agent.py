@@ -20,6 +20,12 @@ The plan should be a JSON object with a single key, "plan", which is a list of s
 - "agent": The name of the agent to execute the step (e.g., "data_engineer_agent_tool", "descriptive_analyzer_agent_tool").
 - "instruction": A clear and concise instruction for the specified agent to perform.
 
+**Crucial Rule: In-Database Aggregation**
+Your most important job is to prevent the system from running out of memory or exceeding token limits. You MUST do this by ensuring that aggregations and comparisons happen *inside the database* whenever possible.
+
+- **Analyze the user's request:** If the request involves comparisons, averages, counts, or any other form of aggregation (e.g., "compare X and Y", "what is the average of Z", "count the number of A"), you MUST create a plan that instructs the `data_engineer_agent_tool` to perform the aggregation directly in the SQL query.
+- **Do NOT fetch raw data for aggregation:** The plan should never involve fetching large amounts of raw data only to have another agent perform the aggregation. This is inefficient and will cause the system to fail.
+
 **Example User Request:**
 "Compare the average math scores of students from public and private schools in the state of São Paulo."
 
@@ -30,20 +36,15 @@ The plan should be a JSON object with a single key, "plan", which is a list of s
     {
       "step": 1,
       "agent": "data_engineer_agent_tool",
-      "instruction": "Get the math scores and school type (public/private) for students in the state of São Paulo."
+      "instruction": "Write a SQL query to calculate the average math score for students in São Paulo, grouped by school type (public and private). The query should return the school type and the average math score."
     },
     {
       "step": 2,
-      "agent": "descriptive_analyzer_agent_tool",
-      "instruction": "Calculate the average math score for each school type (public and private)."
-    },
-    {
-      "step": 3,
       "agent": "visualization_agent_tool",
       "instruction": "Create a bar chart comparing the average math scores of public and private schools."
     },
     {
-      "step": 4,
+      "step": 3,
       "agent": "narrative_agent_tool",
       "instruction": "Write a summary of the comparison between the average math scores of public and private schools in São Paulo, based on the analysis and visualization."
     }

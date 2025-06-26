@@ -19,7 +19,7 @@ SESSION_ID = "session12345"
 def display_message_content(message_text):
     """Display message content, rendering text and charts in order."""
     # Regex to find vega-lite or json code blocks and the text around them
-    pattern = r'(.*?)(```(?:vega-lite|json)\n(.*?)\n```)'
+    pattern = r'(.*?)(```(?:json)\n(.*?)\n```)'
 
     # Find all matches
     matches = re.findall(pattern, message_text, re.DOTALL)
@@ -33,29 +33,51 @@ def display_message_content(message_text):
         return
 
     # Iterate through matches and render content
-    for i, (pre_text, full_chart_block, chart_spec_str) in enumerate(matches):
+    for i, (pre_text, full_chart_block, chart_json_str) in enumerate(matches):
         # Display the text that came before the chart
         if pre_text.strip():
             st.markdown(pre_text)
 
         # Process and display the chart
         try:
-            chart_spec = json.loads(chart_spec_str.strip())
-            
-            if chart_spec.get("spec"):
-                chart_spec = chart_spec.pop("spec")
+            chart_data = json.loads(chart_json_str.strip())
+            chart_spec = chart_data.get("chart_spec", {})
+            filterable_columns = chart_data.get("filterable_columns", [])
 
-            chart_data = chart_spec.pop("data", {})
-            data = pd.DataFrame(chart_data.get("values", []))
-            
-            st.vega_lite_chart(data, chart_spec, use_container_width=True)
+            if not chart_spec:
+                st.error("Chart specification is missing.")
+                continue
+
+            data = pd.DataFrame(chart_spec.get("data", {}).get("values", []))
+
+            if not data.empty and filterable_columns:
+                st.sidebar.title(f"Chart Filters")
+                
+                filtered_data = data.copy()
+
+                for col in filterable_columns:
+                    if col in data.columns:
+                        unique_values = data[col].unique()
+                        
+                        selected_values = st.sidebar.multiselect(
+                            label=f"Filter by {col}",
+                            options=unique_values,
+                            default=unique_values,
+                            key=f"filter_{i}_{col}"
+                        )
+                        
+                        filtered_data = filtered_data[filtered_data[col].isin(selected_values)]
+                
+                st.vega_lite_chart(filtered_data, chart_spec, use_container_width=True)
+            elif not data.empty:
+                st.vega_lite_chart(data, chart_spec, use_container_width=True)
 
         except json.JSONDecodeError as e:
             st.error(f"Failed to parse chart JSON: {e}")
-            st.code(chart_spec_str, language="json")
+            st.code(chart_json_str, language="json")
         except Exception as e:
             st.error(f"Failed to render chart {i+1}: {e}")
-            st.json(chart_spec)
+            st.json(chart_data)
         
         # Update the position of the last match
         last_end = message_text.find(full_chart_block, last_end) + len(full_chart_block)
