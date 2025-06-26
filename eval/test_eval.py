@@ -18,5 +18,30 @@ async def test_data_agent():
     await AgentEvaluator.evaluate(
         "data_agent",
         str(pathlib.Path(__file__).parent / "data"),
-        num_runs=2,
+        num_runs=2
+    )
+
+
+@pytest.mark.asyncio
+async def test_analysis_agent():
+    await AgentEvaluator.evaluate(
+        "descriptive_analyzer_agent_tool",
+        str(pathlib.Path(__file__).parent / "data"),
+        num_runs=1
+    )
+
+@pytest.mark.asyncio
+async def test_visualization_agent():
+    await AgentEvaluator.evaluate(
+        "visualization_agent_tool",
+        str(pathlib.Path(__file__).parent / "data"),
+        num_runs=1
+    )
+
+@pytest.mark.asyncio
+async def test_narrative_agent():
+    await AgentEvaluator.evaluate(
+        "narrative_agent_tool",
+        str(pathlib.Path(__file__).parent / "data"),
+        num_runs=1
     )

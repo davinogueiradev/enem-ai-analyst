@@ -1,0 +1,72 @@
+[
+  {
+    "original_question": "What is the average score for each subject and how do they compare?",
+    "analysis_results": {
+      "results": [
+        {
+          "analysis_type": "aggregation",
+          "group_by_columns": ["subject"],
+          "metric_column": "score",
+          "groups": [
+            {"subject": "Math", "mean_score": 85.5},
+            {"subject": "Science", "mean_score": 88.0},
+            {"subject": "History", "mean_score": 82.1}
+          ]
+        }
+      ],
+      "suggestions": ["Science has the highest average score. Consider looking into score distributions."]
+    },
+    "visualizations": [
+      "## Visualization Recommendation\nI recommend using a **bar chart** to compare the average scores across subjects.\n\n```vega-lite\n{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"data\": {\n    \"values\": [\n      {\"subject\": \"Math\", \"mean_score\": 85.5},\n      {\"subject\": \"Science\", \"mean_score\": 88.0},\n      {\"subject\": \"History\", \"mean_score\": 82.1}\n    ]\n  },\n  \"mark\": \"bar\",\n  \"encoding\": {\n    \"x\": {\"field\": \"subject\", \"type\": \"nominal\", \"title\": \"Subject\"},\n    \"y\": {\"field\": \"mean_score\", \"type\": \"quantitative\", \"title\": \"Average Score\"}\n  },\n  \"title\": \"Average Score by Subject\"\n}\n```\n"
+    ],
+    "expected_narrative_contains": [
+      "# Analysis of Average Scores by Subject",
+      "## Key Findings",
+      "Science has the highest average score (**88.0**)",
+      "Math", "85.5",
+      "History", "82.1",
+      "## Chart Analysis",
+      "The following bar chart visualizes the average scores",
+      "```vega-lite",
+      "\"title\": \"Average Score by Subject\"",
+      "## Conclusion",
+      "Science shows the highest average performance"
+    ]
+  },
+  {
+    "original_question": "How many participants are there in each region?",
+    "analysis_results": {
+      "results": [
+        {
+          "analysis_type": "frequency_analysis",
+          "column": "region",
+          "frequencies": [
+            {"region": "North", "count": 1200, "percentage": 0.3},
+            {"region": "South", "count": 1800, "percentage": 0.45},
+            {"region": "East", "count": 500, "percentage": 0.125},
+            {"region": "West", "count": 500, "percentage": 0.125}
+          ]
+        }
+      ],
+      "suggestions": []
+    },
+    "visualizations": [
+       "## Visualization Recommendation\nA **bar chart** is suitable for comparing the number of participants across different regions.\n\n```vega-lite\n{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"data\": {\n    \"values\": [\n      {\"region\": \"North\", \"count\": 1200},\n      {\"region\": \"South\", \"count\": 1800},\n      {\"region\": \"East\", \"count\": 500},\n      {\"region\": \"West\", \"count\": 500}\n    ]\n  },\n  \"mark\": \"bar\",\n  \"encoding\": {\n    \"x\": {\"field\": \"region\", \"type\": \"nominal\", \"title\": \"Region\"},\n    \"y\": {\"field\": \"count\", \"type\": \"quantitative\", \"title\": \"Number of Participants\"}\n  },\n  \"title\": \"Participants by Region\"\n}\n```\n"
+    ],
+    "expected_narrative_contains": [
+      "# Participant Distribution by Region",
+      "## Key Findings",
+      "| Region | Count    | Percentage |",
+      "|--------|----------|------------|",
+      "| North  | 1200     | 30.0%      |",
+      "| South  | 1800     | 45.0%      |",
+      "The South region has the highest number of participants (**1800**)",
+      "## Chart Analysis",
+      "The bar chart below illustrates these differences clearly.",
+      "```vega-lite",
+      "\"title\": \"Participants by Region\"",
+      "## Conclusion",
+      "The majority of participants are from the South region."
+    ]
+  }
+]

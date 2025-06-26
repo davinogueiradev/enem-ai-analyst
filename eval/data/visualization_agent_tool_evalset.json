@@ -1,0 +1,66 @@
+[
+  {
+    "dataset": [
+      {"category": "A", "value": 28},
+      {"category": "B", "value": 55},
+      {"category": "C", "value": 43}
+    ],
+    "visualization_goal": "Show the values for each category using a bar chart.",
+    "suggested_chart_type": "bar",
+    "expected_recommendation_text_contains": ["bar chart", "compares categorical data"],
+    "expected_vega_lite_spec_contains": [
+      "\"mark\": \"bar\"",
+      "\"x\": {\"field\": \"category\"",
+      "\"y\": {\"field\": \"value\""
+    ]
+  },
+  {
+    "dataset": [
+      {"x_axis": 10, "y_axis": 20, "group": "G1"},
+      {"x_axis": 15, "y_axis": 25, "group": "G1"},
+      {"x_axis": 30, "y_axis": 30, "group": "G2"},
+      {"x_axis": 35, "y_axis": 45, "group": "G2"}
+    ],
+    "visualization_goal": "Display the relationship between x_axis and y_axis as a scatter plot, colored by group.",
+    "expected_recommendation_text_contains": ["scatter plot", "relationship between two numerical variables"],
+    "expected_vega_lite_spec_contains": [
+      "\"mark\": \"point\"",
+      "\"x\": {\"field\": \"x_axis\"",
+      "\"y\": {\"field\": \"y_axis\"",
+      "\"color\": {\"field\": \"group\""
+    ]
+  },
+  {
+    "dataset": [
+      {"group": "Alpha", "score": 75},
+      {"group": "Alpha", "score": 80},
+      {"group": "Beta", "score": 85},
+      {"group": "Beta", "score": 90},
+      {"group": "Gamma", "score": 60},
+      {"group": "Gamma", "score": 65}
+    ],
+    "visualization_goal": "Compare the distribution of scores for different groups.",
+    "suggested_chart_type": "boxplot",
+    "expected_recommendation_text_contains": ["box plot", "distribution of numerical data"],
+    "expected_vega_lite_spec_contains": [
+      "\"mark\": \"boxplot\"",
+      "\"x\": {\"field\": \"group\"",
+      "\"y\": {\"field\": \"score\""
+    ]
+  },
+  {
+    "dataset": [
+      {"date": "2023-01-01", "value": 100},
+      {"date": "2023-01-02", "value": 105},
+      {"date": "2023-01-03", "value": 102},
+      {"date": "2023-01-04", "value": 110}
+    ],
+    "visualization_goal": "Show the trend of value over date.",
+    "expected_recommendation_text_contains": ["line chart", "trend over time"],
+    "expected_vega_lite_spec_contains": [
+        "\"mark\": \"line\"",
+        "\"x\": {\"field\": \"date\", \"type\": \"temporal\"",
+        "\"y\": {\"field\": \"value\", \"type\": \"quantitative\""
+    ]
+  }
+]

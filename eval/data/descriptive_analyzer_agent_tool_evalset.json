@@ -1,0 +1,84 @@
+[
+  {
+    "dataset": "[{\"col_a\": 1, \"col_b\": \"cat1\", \"col_c\": 10.5}, {\"col_a\": 2, \"col_b\": \"cat2\", \"col_c\": 20.0}, {\"col_a\": 3, \"col_b\": \"cat1\", \"col_c\": 15.0}]",
+    "analysis_instructions": "Calculate descriptive statistics for col_a and col_c.",
+    "expected_results": [
+      {
+        "analysis_type": "descriptive_statistics",
+        "column": "col_a",
+        "metrics": {
+          "mean": 2.0,
+          "median": 2.0,
+          "std_dev": 1.0,
+          "min": 1,
+          "max": 3
+        }
+      },
+      {
+        "analysis_type": "descriptive_statistics",
+        "column": "col_c",
+        "metrics": {
+          "mean": 15.166666666666666,
+          "median": 15.0,
+          "std_dev": 4.725815626252961,
+          "min": 10.5,
+          "max": 20.0
+        }
+      }
+    ],
+    "expected_suggestions": []
+  },
+  {
+    "dataset": "[{\"product_id\": \"A\", \"category\": \"X\", \"sales\": 100}, {\"product_id\": \"B\", \"category\": \"Y\", \"sales\": 150}, {\"product_id\": \"C\", \"category\": \"X\", \"sales\": 120}, {\"product_id\": \"D\", \"category\": \"Y\", \"sales\": 200}, {\"product_id\": \"E\", \"category\": \"X\", \"sales\": 80}]",
+    "analysis_instructions": "What are the total sales for each category?",
+    "expected_results": [
+      {
+        "analysis_type": "aggregation",
+        "group_by_columns": ["category"],
+        "metric_column": "sales",
+        "groups": [
+          {"category": "X", "sum_sales": 300},
+          {"category": "Y", "sum_sales": 350}
+        ]
+      }
+    ],
+    "expected_suggestions": [
+      "Category Y has higher total sales. Consider analyzing average sales per product in each category."
+    ]
+  },
+  {
+    "dataset": "[{\"student_id\": 1, \"math_score\": 85, \"science_score\": 90}, {\"student_id\": 2, \"math_score\": 70, \"science_score\": 75}, {\"student_id\": 3, \"math_score\": 95, \"science_score\": 88}, {\"student_id\": 4, \"math_score\": 60, \"science_score\": 65}, {\"student_id\": 5, \"math_score\": 78, \"science_score\": 80}]",
+    "analysis_instructions": "Calculate the correlation between math_score and science_score.",
+    "expected_results": [
+      {
+        "analysis_type": "correlation_analysis",
+        "columns": ["math_score", "science_score"],
+        "correlation_matrix": [
+          {"variable1": "math_score", "variable2": "math_score", "correlation": 1.0},
+          {"variable1": "math_score", "variable2": "science_score", "correlation": 0.9938079909630091},
+          {"variable1": "science_score", "variable2": "math_score", "correlation": 0.9938079909630091},
+          {"variable1": "science_score", "variable2": "science_score", "correlation": 1.0}
+        ]
+      }
+    ],
+    "expected_suggestions": [
+      "There is a strong positive correlation between math and science scores. You could visualize this with a scatter plot."
+    ]
+  },
+  {
+    "dataset": "[{\"status\": \"active\"}, {\"status\": \"inactive\"}, {\"status\": \"active\"}, {\"status\": \"active\"}, {\"status\": \"pending\"}, {\"status\": \"active\"}]",
+    "analysis_instructions": "Provide a frequency count for the status column.",
+    "expected_results": [
+      {
+        "analysis_type": "frequency_analysis",
+        "column": "status",
+        "frequencies": [
+          {"status": "active", "count": 4, "percentage": 0.6666666666666666},
+          {"status": "inactive", "count": 1, "percentage": 0.16666666666666666},
+          {"status": "pending", "count": 1, "percentage": 0.16666666666666666}
+        ]
+      }
+    ],
+    "expected_suggestions": []
+  }
+]
