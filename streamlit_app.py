@@ -91,6 +91,14 @@ def main() -> None:
         st.sidebar.markdown("**Database Schema:**")
         st.sidebar.code(st.session_state.db_schema)
 
+    st.sidebar.title("Data Context")
+    st.sidebar.caption("Provide additional information about your data and tables.")
+    st.session_state.data_context = st.sidebar.text_area(
+        "Data Context",
+        st.session_state.get("data_context", ""),
+        help="Provide details about the data, tables, and columns to help the AI understand the context."
+    )
+
     st.title("🤖 AI Data Analyst")
     st.caption("Ask me anything about your data!")
 
@@ -123,9 +131,15 @@ def main() -> None:
                 if "db_schema" not in st.session_state:
                     st.error("Please load the database schema first.")
                 else:
-                    prompt_with_schema = f"""Database Schema: {st.session_state.db_schema} User Request: {prompt}"""
-                    
-                    content = types.Content(role="user", parts=[types.Part(text=prompt_with_schema)])
+                    prompt_with_context = f"""
+Database Schema: {st.session_state.db_schema}
+
+Data Context:
+{st.session_state.data_context}
+
+User Request: {prompt}
+"""
+                    content = types.Content(role="user", parts=[types.Part(text=prompt_with_context)])
                     events = runner.run(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
 
                     full_response = ""
