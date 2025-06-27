@@ -18,7 +18,7 @@ from enem_ai_analyst import config_manager
 def display_message_content(message_text):
     """Display message content, rendering text and charts in order."""
     # Regex to find vega-lite or JSON code blocks and the text around them
-    pattern = r'(.*?)(```(?:json)\n(.*?)\n```)'
+    pattern = r'(.*?)(```(?:json|vega-lite)\n(.*?)\n```)'
 
     # Find all matches
     matches = re.findall(pattern, message_text, re.DOTALL)
@@ -39,9 +39,17 @@ def display_message_content(message_text):
 
         # Process and display the chart
         try:
-            chart_data = json.loads(chart_json_str.strip())
-            chart_spec = chart_data.get("chart_spec", {})
-            filterable_columns = chart_data.get("filterable_columns", [])
+            chart_json = json.loads(chart_json_str.strip())
+
+            # Determine if the JSON is a raw Vega-Lite spec or our custom wrapper
+            if "chart_spec" in chart_json:
+                # It's the wrapper format
+                chart_spec = chart_json.get("chart_spec", {})
+                filterable_columns = chart_json.get("filterable_columns", [])
+            else:
+                # Assume it's a raw Vega-Lite spec
+                chart_spec = chart_json
+                filterable_columns = [] # No filtering for raw specs
 
             if not chart_spec:
                 # Log error for debugging, but don't show to user unless critical
@@ -86,7 +94,7 @@ def display_message_content(message_text):
             st.code(chart_json_str, language="json")
         except Exception as e:
             st.error(f"Failed to render chart {i+1}: {e}")
-            st.json(chart_data)
+            st.json(chart_json)
         
         # Update the position of the last match
         last_end = message_text.find(full_chart_block, last_end) + len(full_chart_block)
