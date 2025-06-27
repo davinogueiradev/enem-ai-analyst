@@ -1,0 +1,217 @@
+{
+  "eval_set_id": "data_agent_eval_set",
+  "name": "Data Agent Evaluation Set",
+  "description": "Test cases for the Data Agent, focusing on SQL query generation, execution, and data formatting.",
+  "eval_cases": [
+    {
+      "eval_id": "data_agent_count_group_by",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"analytical_request\": \"Generate a SQL query to count students by race and gender in Joinville.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "[{\"race\": \"Branca\", \"gender\": \"Feminino\", \"count\": 120}, {\"race\": \"Parda\", \"gender\": \"Masculino\", \"count\": 110}]"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "execute_sql",
+                "args": {
+                  "query": "SELECT TP_COR_RACA, TP_SEXO, COUNT(*) AS total_students FROM microdados_enem_2022_joinville_filtered GROUP BY TP_COR_RACA, TP_SEXO;"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_data_count_group"
+      }
+    },
+    {
+      "eval_id": "data_agent_avg_with_filter",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"analytical_request\": \"What is the average math score for female students who attended public high schools in Florianopolis?\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "[{\"average_math_score\": 550.75}]"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "execute_sql",
+                "args": {
+                  "query": "SELECT AVG(NU_NOTA_MT) AS average_math_score FROM microdados_enem_2022_florianopolis_filtered WHERE TP_SEXO = 'Feminino' AND TP_ESCOLA = 2;"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_data_avg_filter"
+      }
+    },
+    {
+      "eval_id": "data_agent_select_specific_columns",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"analytical_request\": \"Get the math, science, and humanities scores for students from Curitiba with an income bracket 'Q006_C' (R$ 2.400,01 - R$ 3.600,00).\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "[{\"math_score\": 650.0, \"science_score\": 620.5, \"humanities_score\": 680.2}, {\"math_score\": 710.3, \"science_score\": 690.0, \"humanities_score\": 705.5}]"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "execute_sql",
+                "args": {
+                  "query": "SELECT NU_NOTA_MT, NU_NOTA_CN, NU_NOTA_CH FROM microdados_enem_2022_curitiba_filtered WHERE Q006 = 'C';"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_data_select_cols"
+      }
+    },
+    {
+      "eval_id": "data_agent_non_existent_column_error",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"analytical_request\": \"Get the favorite color of students from Porto Alegre.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"error\": \"The requested column 'favorite_color' does not exist in the provided schema.\"}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_data_non_existent_col"
+      }
+    },
+    {
+      "eval_id": "data_agent_list_tables_request",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"analytical_request\": \"List all available tables and their schemas so I can understand what data I can query.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "[{\"table_name\": \"microdados_enem_2022_joinville_filtered\", \"schema\": \"(...schema description...)\"}]"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "list_tables_and_schemas",
+                "args": {}
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_data_list_tables"
+      }
+    },
+    {
+      "eval_id": "data_agent_complex_join_and_aggregation",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"analytical_request\": \"For students in Sao Paulo, find the average math score for each school type, but only include schools that have at least 50 students participating in the exam. Also, provide the count of such schools for each type.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "[{\"school_type\": \"Publica\", \"average_math_score\": 520.5, \"school_count\": 15}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0, \"school_count\": 22}]"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "execute_sql",
+                "args": {
+                  "query": "SELECT TP_ESCOLA, AVG(NU_NOTA_MT) AS average_math_score, COUNT(DISTINCT CO_ESCOLA) AS school_count FROM microdados_enem_2022_saopaulo_filtered GROUP BY TP_ESCOLA HAVING COUNT(NU_INSCRICAO) >= 50;"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_data_complex_join_agg"
+      }
+    }
+  ]
+}
