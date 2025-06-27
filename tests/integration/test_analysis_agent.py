@@ -1,0 +1,10 @@
+import pytest
+from google.adk.evaluation.agent_evaluator import AgentEvaluator
+
+@pytest.mark.asyncio
+async def test_analysis_agent_evals():
+    """Test the analysis agent using the defined evalset."""
+    await AgentEvaluator.evaluate(
+        agent_module="enem_ai_analyst.sub_agents.analysis_agent",
+        eval_dataset_file_path_or_dir="tests/integration/fixtures/analysis_agent/eval_set_analysis_agent.test.json"
+    )

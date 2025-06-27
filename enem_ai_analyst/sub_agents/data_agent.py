@@ -57,3 +57,7 @@ data_agent = LlmAgent(
     )
 )
 logger.info("Data Agent initialized.")
+
+# Wrapper for ADK evaluation
+class agent:
+    root_agent = data_agent

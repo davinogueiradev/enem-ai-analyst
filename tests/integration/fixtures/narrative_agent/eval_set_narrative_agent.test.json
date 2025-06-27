@@ -1,0 +1,142 @@
+{
+  "eval_set_id": "narrative_agent_eval_set",
+  "name": "Narrative Agent Evaluation Set",
+  "description": "Test cases for the Narrative Agent, focusing on synthesis, Markdown formatting, and visualization integration.",
+  "eval_cases": [
+    {
+      "eval_id": "narrative_simple_analysis_no_viz",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"original_question\": \"What is the average score?\", \"analysis_results\": {\"results\": [{\"analysis_type\": \"descriptive_statistics\", \"column\": \"score\", \"metrics\": {\"mean\": 550.5, \"median\": 540.0, \"std_dev\": 75.2}}], \"suggestions\": []}, \"visualizations\": []}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Analysis of Average Score\n\n> The average score is 550.5.\n\n## Key Findings\n\nBased on the data provided, here are the main findings:\n* The **average (mean) score** calculated is **550.5**.\n* The median score is 540.0.\n* The standard deviation of scores is 75.2.\n\n## Conclusion\n\nThe primary finding is that the average score is **550.5**. This provides a central tendency for the dataset analyzed."
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_narrative_simple_no_viz"
+      }
+    },
+    {
+      "eval_id": "narrative_with_visualization",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"original_question\": \"How do scores compare across regions?\", \"analysis_results\": {\"results\": [{\"analysis_type\": \"aggregation\", \"group_by_columns\": [\"region\"], \"metric_column\": \"score\", \"groups\": [{\"region\": \"North\", \"mean_score\": 520.0}, {\"region\": \"South\", \"mean_score\": 580.0}]}], \"suggestions\": []}, \"visualizations\": [{\"chart_spec\": {\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"title\": \"Average Scores by Region\", \"data\": {\"values\": [{\"region\": \"North\", \"mean_score\": 520.0}, {\"region\": \"South\", \"mean_score\": 580.0}]}, \"mark\": \"bar\", \"encoding\": {\"x\": {\"field\": \"region\", \"type\": \"nominal\"}, \"y\": {\"field\": \"mean_score\", \"type\": \"quantitative\"}}}, \"filterable_columns\": [\"region\"]}]}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Comparison of Scores Across Regions\n\n> Average scores are notably higher in the South region compared to the North.\n\n## Key Findings\n\nBased on the analysis of scores by region:\n* The average score in the **North** region is **520.0**.\n* The average score in the **South** region is **580.0**.\n\n## Chart Analysis\n\nThe following bar chart visualizes the average scores for each region:\n\n```vega-lite\n{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"title\": \"Average Scores by Region\",\n  \"data\": {\n    \"values\": [\n      {\"region\": \"North\", \"mean_score\": 520.0},\n      {\"region\": \"South\", \"mean_score\": 580.0}\n    ]\n  },\n  \"mark\": \"bar\",\n  \"encoding\": {\n    \"x\": {\"field\": \"region\", \"type\": \"nominal\"},\n    \"y\": {\"field\": \"mean_score\", \"type\": \"quantitative\"}\n  }\n}\n```\n\nThe chart clearly shows that the average score for the South region is higher than that of the North region.\n\n## Conclusion\n\nThe analysis and visualization indicate a regional difference in scores, with the South region performing better on average (**580.0**) than the North region (**520.0**)."
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_narrative_with_viz"
+      }
+    },
+    {
+      "eval_id": "narrative_with_table_from_analysis",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"original_question\": \"What are the key stats for different subjects?\", \"analysis_results\": {\"results\": [{\"analysis_type\": \"descriptive_statistics\", \"column\": \"Math\", \"metrics\": {\"mean\": 600, \"median\": 605, \"std_dev\": 50}}, {\"analysis_type\": \"descriptive_statistics\", \"column\": \"Science\", \"metrics\": {\"mean\": 620, \"median\": 625, \"std_dev\": 45}}], \"suggestions\": []}, \"visualizations\": []}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Key Statistics for Different Subjects\n\n> Science has a slightly higher average score and lower variability compared to Math.\n\n## Key Findings\n\nThe following table summarizes the key descriptive statistics for Math and Science scores:\n\n| Subject | Mean Score | Median Score | Standard Deviation |\n|---|---|---|---|\n| Math | **600** | 605 | 50 |\n| Science | **620** | 625 | 45 |\n\n## Conclusion\n\nOverall, students performed slightly better in Science (average score **620**) compared to Math (average score **600**). Science scores also appear to be slightly less spread out (standard deviation of 45) than Math scores (standard deviation of 50)."
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_narrative_with_table"
+      }
+    },
+    {
+      "eval_id": "narrative_handling_error_in_analysis",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"original_question\": \"Analyze my broken data.\", \"analysis_results\": {\"results\": [{\"analysis_type\": \"error\", \"error_message\": \"Column 'X' not found.\", \"suggested_resolution\": \"Check column name.\"}], \"suggestions\": []}, \"visualizations\": []}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Analysis Error Report\n\nAn error was encountered during the data analysis phase:\n\n*   **Error Message:** Column 'X' not found.\n*   **Suggested Resolution:** Check column name.\n\nPlease review the input data or analysis request to address this issue."
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_narrative_error_handling"
+      }
+    },
+    {
+      "eval_id": "narrative_complex_report_multiple_elements",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"original_question\": \"Full analysis of student performance: math scores by income, and overall science score distribution.\", \"analysis_results\": {\"results\": [{\"analysis_type\": \"aggregation\", \"group_by_columns\": [\"income_bracket\"], \"metric_column\": \"math_score\", \"groups\": [{\"income_bracket\": \"Low\", \"mean_math_score\": 500}, {\"income_bracket\": \"High\", \"mean_math_score\": 700}]}, {\"analysis_type\": \"descriptive_statistics\", \"column\": \"science_score\", \"metrics\": {\"mean\": 600, \"std_dev\": 80}}], \"suggestions\": [\"Explore other subjects.\"]}, \"visualizations\": [{\"chart_spec\": {\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"title\": \"Math Scores by Income\", \"data\": {\"values\": [{\"income_bracket\": \"Low\", \"mean_math_score\": 500}, {\"income_bracket\": \"High\", \"mean_math_score\": 700}]}, \"mark\": \"bar\", \"encoding\": {\"x\": {\"field\": \"income_bracket\"}, \"y\": {\"field\": \"mean_math_score\"}}}, \"filterable_columns\": [\"income_bracket\"]}, {\"chart_spec\": {\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"title\": \"Science Score Distribution\", \"data\": {\"values\": [{\"science_score\": 500},{\"science_score\": 600},{\"science_score\": 700}]}, \"mark\": \"bar\", \"encoding\": {\"x\": {\"bin\": true, \"field\": \"science_score\"}, \"y\": {\"aggregate\": \"count\"}}}, \"filterable_columns\": []}]}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Comprehensive Student Performance Analysis\n\n> Students from higher income brackets tend to have higher math scores, and the overall science scores show a mean of 600.\n\n## Key Findings\n\n### Math Scores by Income Bracket\nThe analysis of math scores grouped by income bracket reveals the following:\n*   Students in the **Low** income bracket have an average math score of **500**.\n*   Students in the **High** income bracket have an average math score of **700**.\n\n### Science Score Distribution\nDescriptive statistics for science scores show:\n*   The average science score is **600**.\n*   The standard deviation for science scores is 80.\n\n## Chart Analysis\n\n### Math Scores by Income\nThe chart below illustrates the difference in average math scores between income brackets:\n\n```vega-lite\n{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"title\": \"Math Scores by Income\",\n  \"data\": {\n    \"values\": [\n      {\"income_bracket\": \"Low\", \"mean_math_score\": 500},\n      {\"income_bracket\": \"High\", \"mean_math_score\": 700}\n    ]\n  },\n  \"mark\": \"bar\",\n  \"encoding\": {\n    \"x\": {\"field\": \"income_bracket\"},\n    \"y\": {\"field\": \"mean_math_score\"}\n  }\n}\n```\nThis bar chart clearly shows that students from the 'High' income bracket have a significantly higher average math score.\n\n### Science Score Distribution\nThe distribution of science scores is represented in the histogram below:\n\n```vega-lite\n{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"title\": \"Science Score Distribution\",\n  \"data\": {\n    \"values\": [\n      {\"science_score\": 500},\n      {\"science_score\": 600},\n      {\"science_score\": 700}\n    ]\n  },\n  \"mark\": \"bar\",\n  \"encoding\": {\n    \"x\": {\"bin\": true, \"field\": \"science_score\"},\n    \"y\": {\"aggregate\": \"count\"}\n  }\n}\n```\nThis histogram provides a visual representation of how science scores are distributed across the student population.\n\n## Conclusion\n\nThere is a clear association between income bracket and math performance, with higher income correlating with higher scores. Science scores are centered around a mean of **600**. The analysis suggests further exploration into other subjects might be beneficial."
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_narrative_complex"
+      }
+    }
+  ]
+}

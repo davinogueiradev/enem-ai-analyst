@@ -1,0 +1,196 @@
+{
+  "eval_set_id": "analysis_agent_eval_set",
+  "name": "Analysis Agent Evaluation Set",
+  "description": "Test cases for the Analysis Agent, covering descriptive statistics, frequency analysis, segmentation, and suggestions.",
+  "eval_cases": [
+    {
+      "eval_id": "analysis_descriptive_stats_numerical",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": \"[{\\\"score\\\": 500, \\\"age\\\": 17}, {\\\"score\\\": 600, \\\"age\\\": 18}, {\\\"score\\\": 700, \\\"age\\\": 19}]\", \"analysis_instructions\": \"Calculate descriptive statistics for the 'score' column.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"results\": [{\"analysis_type\": \"descriptive_statistics\", \"column\": \"score\", \"metrics\": {\"mean\": 600.0, \"median\": 600.0, \"mode\": null, \"standard_deviation\": 81.65, \"variance\": 6666.67, \"minimum\": 500, \"maximum\": 700, \"q1\": 550.0, \"q3\": 650.0, \"iqr\": 100.0}}], \"suggestions\": [\"The scores show a moderate spread. Consider visualizing the distribution with a histogram or box plot.\"]}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_analysis_desc_num"
+      }
+    },
+    {
+      "eval_id": "analysis_frequency_categorical",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": \"[{\\\"city\\\": \\\"A\\\"}, {\\\"city\\\": \\\"B\\\"}, {\\\"city\\\": \\\"A\\\"}, {\\\"city\\\": \\\"C\\\"}]\", \"analysis_instructions\": \"Perform frequency analysis for the 'city' column.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"results\": [{\"analysis_type\": \"frequency_analysis\", \"column\": \"city\", \"frequencies\": {\"A\": {\"count\": 2, \"percentage\": 50.0}, \"B\": {\"count\": 1, \"percentage\": 25.0}, \"C\": {\"count\": 1, \"percentage\": 25.0}}}], \"suggestions\": [\"City A is the most frequent. You might want to investigate if this pattern holds in larger datasets or across different segments.\"]}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_analysis_freq_cat"
+      }
+    },
+    {
+      "eval_id": "analysis_segmentation_aggregation",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": \"[{\\\"type\\\": \\\"X\\\", \\\"value\\\": 10}, {\\\"type\\\": \\\"Y\\\", \\\"value\\\": 20}, {\\\"type\\\": \\\"X\\\", \\\"value\\\": 15}]\", \"analysis_instructions\": \"Calculate the average 'value' grouped by 'type'.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"results\": [{\"analysis_type\": \"aggregation\", \"group_by_columns\": [\"type\"], \"metric_column\": \"value\", \"groups\": [{\"type\": \"X\", \"mean_value\": 12.5}, {\"type\": \"Y\", \"mean_value\": 20.0}]}], \"suggestions\": [\"The average value for type Y is higher than for type X. Consider exploring other metrics like median or standard deviation for these groups.\"]}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_analysis_segment_agg"
+      }
+    },
+    {
+      "eval_id": "analysis_correlation",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": \"[{\\\"math_score\\\": 600, \\\"hours_study\\\": 4}, {\\\"math_score\\\": 700, \\\"hours_study\\\": 6}, {\\\"math_score\\\": 500, \\\"hours_study\\\": 3}]\", \"analysis_instructions\": \"Compute the correlation matrix for numerical variables.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"results\": [{\"analysis_type\": \"correlation_analysis\", \"correlation_matrix\": {\"math_score\": {\"math_score\": 1.0, \"hours_study\": 0.9819805060619658}, \"hours_study\": {\"math_score\": 0.9819805060619658, \"hours_study\": 1.0}}}], \"suggestions\": [\"There is a strong positive correlation between 'math_score' and 'hours_study'. Consider a scatter plot to visualize this relationship.\"]}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_analysis_correlation"
+      }
+    },
+    {
+      "eval_id": "analysis_error_wrong_data_type",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": \"[{\\\"name\\\": \\\"Alice\\\", \\\"score\\\": \\\"high\\\"}]\", \"analysis_instructions\": \"Calculate descriptive statistics for the 'score' column.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"results\": [{\"analysis_type\": \"error\", \"error_message\": \"Descriptive statistics can only be calculated for numerical data. Column 'score' is categorical or textual.\", \"suggested_resolution\": \"Ensure the 'score' column contains numerical values or request a different type of analysis, such as frequency analysis.\"}], \"suggestions\": []}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_analysis_error_dtype"
+      }
+    },
+    {
+      "eval_id": "analysis_empty_dataset",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": \"[]\", \"analysis_instructions\": \"Calculate descriptive statistics for 'score'.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"results\": [{\"analysis_type\": \"error\", \"error_message\": \"The provided dataset is empty. Analysis cannot be performed.\", \"suggested_resolution\": \"Provide a dataset with data points to analyze.\"}], \"suggestions\": []}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_analysis_empty_dataset"
+      }
+    },
+    {
+      "eval_id": "analysis_multiple_analyses_and_suggestions",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": \"[{\\\"region\\\": \\\"North\\\", \\\"score_math\\\": 550, \\\"score_lang\\\": 600}, {\\\"region\\\": \\\"South\\\", \\\"score_math\\\": 650, \\\"score_lang\\\": 620}, {\\\"region\\\": \\\"North\\\", \\\"score_math\\\": 580, \\\"score_lang\\\": 610}]\", \"analysis_instructions\": \"Provide descriptive statistics for 'score_math' and 'score_lang', and also group by 'region' to find average math scores.\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"results\": [{\"analysis_type\": \"descriptive_statistics\", \"column\": \"score_math\", \"metrics\": {\"mean\": 593.33, \"median\": 580.0, \"mode\": null, \"standard_deviation\": 41.99, \"variance\": 1763.33, \"minimum\": 550, \"maximum\": 650, \"q1\": 565.0, \"q3\": 615.0, \"iqr\": 50.0}}, {\"analysis_type\": \"descriptive_statistics\", \"column\": \"score_lang\", \"metrics\": {\"mean\": 610.0, \"median\": 610.0, \"mode\": null, \"standard_deviation\": 8.16, \"variance\": 66.67, \"minimum\": 600, \"maximum\": 620, \"q1\": 605.0, \"q3\": 615.0, \"iqr\": 10.0}}, {\"analysis_type\": \"aggregation\", \"group_by_columns\": [\"region\"], \"metric_column\": \"score_math\", \"groups\": [{\"region\": \"North\", \"mean_score_math\": 565.0}, {\"region\": \"South\", \"mean_score_math\": 650.0}]}], \"suggestions\": [\"Average math score in the South region is notably higher. Consider visualizing this difference with a bar chart.\", \"Language scores show less variability than math scores. Explore if this trend is consistent across other variables.\"]}"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_analysis_multi"
+      }
+    }
+  ]
+}

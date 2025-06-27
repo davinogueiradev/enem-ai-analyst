@@ -1,0 +1,142 @@
+{
+  "eval_set_id": "planner_agent_eval_set",
+  "name": "Planner Agent Evaluation Set",
+  "description": "Test cases for the Planner Agent, focusing on plan generation for various user requests, especially concerning in-database aggregation.",
+  "eval_cases": [
+    {
+      "eval_id": "planner_simple_comparison",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Compare the average math scores of students from public and private schools in the state of São Paulo."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"plan\": [\n    {\n      \"step\": 1,\n      \"agent\": \"data_engineer_agent_tool\",\n      \"instruction\": \"Write a SQL query to calculate the average math score for students in São Paulo, grouped by school type (public and private). The query should return the school type and the average math score.\"\n    },\n    {\n      \"step\": 2,\n      \"agent\": \"visualization_agent_tool\",\n      \"instruction\": \"Create a bar chart comparing the average math scores of public and private schools based on the data from the previous step.\"\n    },\n    {\n      \"step\": 3,\n      \"agent\": \"narrative_agent_tool\",\n      \"instruction\": \"Write a summary of the comparison between the average math scores of public and private schools in São Paulo, based on the analysis and visualization.\"\n    }\n  ]\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_planner_simple_comparison"
+      }
+    },
+    {
+      "eval_id": "planner_count_and_group",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "How many students are there in each state, and what is their average science score?"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"plan\": [\n    {\n      \"step\": 1,\n      \"agent\": \"data_engineer_agent_tool\",\n      \"instruction\": \"Write a SQL query to count the number of students and calculate their average science score, grouped by state. The query should return the state, student count, and average science score.\"\n    },\n    {\n      \"step\": 2,\n      \"agent\": \"descriptive_analyzer_agent_tool\",\n      \"instruction\": \"Perform a descriptive analysis of the average science scores per state provided by the data engineer.\"\n    },\n    {\n      \"step\": 3,\n      \"agent\": \"visualization_agent_tool\",\n      \"instruction\": \"Create a choropleth map or bar chart showing the average science score per state.\"\n    },\n    {\n      \"step\": 4,\n      \"agent\": \"narrative_agent_tool\",\n      \"instruction\": \"Generate a report summarizing the number of students and average science scores by state, incorporating the analysis and visualization.\"\n    }\n  ]\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_planner_count_group"
+      }
+    },
+    {
+      "eval_id": "planner_no_aggregation_needed",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Get me the details of students who scored above 900 in math from Rio de Janeiro."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"plan\": [\n    {\n      \"step\": 1,\n      \"agent\": \"data_engineer_agent_tool\",\n      \"instruction\": \"Write a SQL query to retrieve all details for students from Rio de Janeiro who scored above 900 in math.\"\n    },\n    {\n      \"step\": 2,\n      \"agent\": \"descriptive_analyzer_agent_tool\",\n      \"instruction\": \"Perform a descriptive analysis of the retrieved student data.\"\n    },\n    {\n      \"step\": 3,\n      \"agent\": \"narrative_agent_tool\",\n      \"instruction\": \"Generate a report summarizing the details of students who scored above 900 in math from Rio de Janeiro.\"\n    }\n  ]\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_planner_no_aggregation"
+      }
+    },
+    {
+      "eval_id": "planner_complex_request_multiple_metrics",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "What is the correlation between household income and math scores for students in the Northeast region? Also, show the distribution of Portuguese language scores for these students."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"plan\": [\n    {\n      \"step\": 1,\n      \"agent\": \"data_engineer_agent_tool\",\n      \"instruction\": \"Write a SQL query to retrieve household income, math scores, and Portuguese language scores for all students in the Northeast region.\"\n    },\n    {\n      \"step\": 2,\n      \"agent\": \"descriptive_analyzer_agent_tool\",\n      \"instruction\": \"Using the data from step 1, calculate the correlation between household income and math scores. Also, provide descriptive statistics for Portuguese language scores.\"\n    },\n    {\n      \"step\": 3,\n      \"agent\": \"visualization_agent_tool\",\n      \"instruction\": \"Create a scatter plot for household income vs. math scores, and a histogram for the distribution of Portuguese language scores using the data from step 1.\"\n    },\n    {\n      \"step\": 4,\n      \"agent\": \"narrative_agent_tool\",\n      \"instruction\": \"Generate a comprehensive report detailing the correlation between household income and math scores, the distribution of Portuguese language scores for students in the Northeast, incorporating all analyses and visualizations.\"\n    }\n  ]\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_planner_complex_multi_metrics"
+      }
+    },
+    {
+      "eval_id": "planner_request_only_visualization",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Show me a chart of average writing scores by state."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"plan\": [\n    {\n      \"step\": 1,\n      \"agent\": \"data_engineer_agent_tool\",\n      \"instruction\": \"Write a SQL query to calculate the average writing score, grouped by state. The query should return the state and the average writing score.\"\n    },\n    {\n      \"step\": 2,\n      \"agent\": \"visualization_agent_tool\",\n      \"instruction\": \"Create a bar chart or map showing the average writing scores by state using the data from the previous step.\"\n    },\n    {\n      \"step\": 3,\n      \"agent\": \"narrative_agent_tool\",\n      \"instruction\": \"Provide a brief narrative to accompany the chart of average writing scores by state.\"\n    }\n  ]\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_planner_viz_only"
+      }
+    }
+  ]
+}
