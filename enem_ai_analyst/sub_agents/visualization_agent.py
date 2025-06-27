@@ -138,3 +138,7 @@ visualization_agent = LlmAgent(
     )
 )
 logger.info("Visualization Agent initialized.")
+
+# Wrapper for ADK evaluation
+class agent:
+    root_agent = visualization_agent

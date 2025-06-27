@@ -1,0 +1,230 @@
+{
+  "eval_set_id": "orchestrator_agent_eval_set",
+  "name": "Orchestrator Agent Evaluation Set",
+  "description": "Test cases for the main Orchestrator Agent, focusing on the end-to-end flow of agent calls.",
+  "eval_cases": [
+    {
+      "eval_id": "orchestrator_simple_comparison_flow",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Compare the average math scores of students from public and private schools in the state of São Paulo. The report must be in Brazilian Portuguese."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Comparação das Médias de Matemática por Tipo de Escola em São Paulo\n\n> As escolas privadas apresentam uma média de matemática superior em São Paulo.\n\n## Principais Resultados\n\nCom base nos dados fornecidos:\n* A média de matemática para escolas **Públicas** é **520.5**.\n* A média de matemática para escolas **Privadas** é **680.0**.\n\n## Análise Gráfica\n\nO gráfico de barras a seguir ilustra a comparação das médias:\n\n```vega-lite\n{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"title\": \"Média de Matemática por Tipo de Escola em São Paulo\",\n  \"data\": {\"values\": [{\"school_type\": \"Pública\", \"average_math_score\": 520.5}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0}]},\n  \"mark\": \"bar\",\n  \"encoding\": {\n    \"x\": {\"field\": \"school_type\", \"type\": \"nominal\", \"title\": \"Tipo de Escola\"},\n    \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}\n  }\n}\n```\nO gráfico demonstra claramente que as escolas privadas tiveram um desempenho médio superior em matemática.\n\n## Conclusão\n\nA análise indica que, no estado de São Paulo, estudantes de escolas privadas (**média 680.0**) apresentaram um desempenho significativamente superior em matemática em comparação com estudantes de escolas públicas (**média 520.5**)."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "planner_agent",
+                "args": {
+                  "request": "Compare the average math scores of students from public and private schools in the state of São Paulo. The report must be in Brazilian Portuguese."
+                }
+              },
+              {
+                "name": "data_engineer_agent_tool",
+                "args": {
+                  "request": "{\"analytical_request\": \"Write a SQL query to calculate the average math score for students in São Paulo, grouped by school type (public and private). The query should return the school type and the average math score.\"}"
+                }
+              },
+              {
+                "name": "visualization_agent_tool",
+                "args": {
+                  "request": "{\"dataset\": [{\"school_type\": \"Pública\", \"average_math_score\": 520.5}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0}], \"visualization_goal\": \"Create a bar chart comparing the average math scores of public and private schools based on the data from the previous step.\"}"
+                }
+              },
+              {
+                "name": "narrative_agent_tool",
+                "args": {
+                  "request": "{\"original_question\": \"Compare the average math scores of students from public and private schools in the state of São Paulo. The report must be in Brazilian Portuguese.\", \"analysis_results\": null, \"visualizations\": [{\"chart_spec\": {\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"title\": \"Média de Matemática por Tipo de Escola em São Paulo\", \"data\": {\"values\": [{\"school_type\": \"Pública\", \"average_math_score\": 520.5}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0}]}, \"mark\": \"bar\", \"encoding\": {\"x\": {\"field\": \"school_type\", \"type\": \"nominal\", \"title\": \"Tipo de Escola\"}, \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}}}, \"filterable_columns\": [\"school_type\"]}]}"
+                }
+              }
+            ],
+            "intermediate_responses": [
+              "{\"plan\": [{\"step\": 1, \"agent\": \"data_engineer_agent_tool\", \"instruction\": \"Write a SQL query to calculate the average math score for students in São Paulo, grouped by school type (public and private). The query should return the school type and the average math score.\"}, {\"step\": 2, \"agent\": \"visualization_agent_tool\", \"instruction\": \"Create a bar chart comparing the average math scores of public and private schools based on the data from the previous step.\"}, {\"step\": 3, \"agent\": \"narrative_agent_tool\", \"instruction\": \"Write a summary of the comparison between the average math scores of public and private schools in São Paulo, based on the analysis and visualization. Ensure the report is in Brazilian Portuguese.\"}]}",
+              "[{\"school_type\": \"Pública\", \"average_math_score\": 520.5}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0}]",
+              "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Média de Matemática por Tipo de Escola em São Paulo\",\n    \"data\": {\"values\": [{\"school_type\": \"Pública\", \"average_math_score\": 520.5}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0}]},\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"field\": \"school_type\", \"type\": \"nominal\", \"title\": \"Tipo de Escola\"},\n      \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}\n    }\n  },\n  \"filterable_columns\": [\"school_type\"]\n}\n```"
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_orchestrator_simple_compare"
+      }
+    },
+    {
+      "eval_id": "orchestrator_data_analysis_narrative_flow",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Provide a statistical overview of science scores for students in Rio Grande do Sul. The report needs to be in Brazilian Portuguese."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Visão Geral Estatística das Notas de Ciências no Rio Grande do Sul\n\n> A média das notas de ciências no Rio Grande do Sul é de 550.75, com um desvio padrão de 95.2, indicando uma variabilidade considerável.\n\n## Principais Resultados Estatísticos\n\nA análise descritiva das notas de ciências para estudantes do Rio Grande do Sul revela:\n*   **Média:** 550.75\n*   **Mediana:** 545.0\n*   **Desvio Padrão:** 95.2\n*   **Mínimo:** 380.0\n*   **Máximo:** 890.5\n\n## Conclusão\n\nAs notas de ciências no Rio Grande do Sul têm uma média de **550.75**. O desvio padrão de **95.2** sugere uma dispersão significativa nas notas, com valores que variam de um mínimo de 380.0 até um máximo de 890.5. Seria interessante visualizar essa distribuição para entender melhor a sua forma."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "planner_agent",
+                "args": {
+                  "request": "Provide a statistical overview of science scores for students in Rio Grande do Sul. The report needs to be in Brazilian Portuguese."
+                }
+              },
+              {
+                "name": "data_engineer_agent_tool",
+                "args": {
+                  "request": "{\"analytical_request\": \"Write a SQL query to retrieve all science scores (NU_NOTA_CN) for students from Rio Grande do Sul.\"}"
+                }
+              },
+              {
+                "name": "descriptive_analyzer_agent_tool",
+                "args": {
+                  "request": "{\"dataset\": \"[{\\\"NU_NOTA_CN\\\": 500}, {\\\"NU_NOTA_CN\\\": 600}, {\\\"NU_NOTA_CN\\\": 550.75}, {\\\"NU_NOTA_CN\\\": 380.0}, {\\\"NU_NOTA_CN\\\": 890.5}]\", \"analysis_instructions\": \"Calculate descriptive statistics for the science scores.\"}"
+                }
+              },
+              {
+                "name": "narrative_agent_tool",
+                "args": {
+                  "request": "{\"original_question\": \"Provide a statistical overview of science scores for students in Rio Grande do Sul. The report needs to be in Brazilian Portuguese.\", \"analysis_results\": {\"results\": [{\"analysis_type\": \"descriptive_statistics\", \"column\": \"NU_NOTA_CN\", \"metrics\": {\"mean\": 550.75, \"median\": 545.0, \"standard_deviation\": 95.2, \"minimum\": 380.0, \"maximum\": 890.5}}], \"suggestions\": [\"Consider visualizing this with a histogram.\"]}, \"visualizations\": []}"
+                }
+              }
+            ],
+            "intermediate_responses": [
+              "{\"plan\": [{\"step\": 1, \"agent\": \"data_engineer_agent_tool\", \"instruction\": \"Write a SQL query to retrieve all science scores (NU_NOTA_CN) for students from Rio Grande do Sul.\"}, {\"step\": 2, \"agent\": \"descriptive_analyzer_agent_tool\", \"instruction\": \"Using the retrieved science scores, calculate descriptive statistics (mean, median, std dev, min, max).\"}, {\"step\": 3, \"agent\": \"narrative_agent_tool\", \"instruction\": \"Generate a report in Brazilian Portuguese summarizing the statistical overview of science scores in Rio Grande do Sul, based on the analysis from the previous step.\"}]}",
+              "[{\"NU_NOTA_CN\": 500}, {\"NU_NOTA_CN\": 600}, {\"NU_NOTA_CN\": 550.75}, {\"NU_NOTA_CN\": 380.0}, {\"NU_NOTA_CN\": 890.5}]",
+              "{\"results\": [{\"analysis_type\": \"descriptive_statistics\", \"column\": \"NU_NOTA_CN\", \"metrics\": {\"mean\": 550.75, \"median\": 545.0, \"standard_deviation\": 95.2, \"minimum\": 380.0, \"maximum\": 890.5}}], \"suggestions\": [\"Consider visualizing this with a histogram.\"]}"
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_orchestrator_data_analysis_narrative"
+      }
+    },
+    {
+      "eval_id": "orchestrator_full_flow_with_viz_and_analysis",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Analyze the average math scores by gender for students in Minas Gerais and present it as a bar chart. The report should be in Brazilian Portuguese."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Análise das Médias de Matemática por Gênero em Minas Gerais\n\n> Em Minas Gerais, os estudantes do sexo masculino apresentaram uma média de matemática ligeiramente superior à dos estudantes do sexo feminino.\n\n## Principais Resultados\n\nA análise das médias de matemática por gênero em Minas Gerais resultou no seguinte:\n\n| Gênero    | Média em Matemática |\n|-----------|---------------------|\n| Masculino | **560.2**           |\n| Feminino  | **555.8**           |\n\n## Análise Gráfica\n\nO gráfico de barras abaixo compara as médias de matemática entre os gêneros:\n\n```vega-lite\n{\n  \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n  \"title\": \"Média de Matemática por Gênero em Minas Gerais\",\n  \"data\": {\"values\": [{\"gender\": \"Masculino\", \"average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"average_math_score\": 555.8}]},\n  \"mark\": \"bar\",\n  \"encoding\": {\n    \"x\": {\"field\": \"gender\", \"type\": \"nominal\", \"title\": \"Gênero\"},\n    \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}\n  }\n}\n```\nO gráfico ilustra a pequena diferença nas médias de matemática, com o gênero masculino apresentando uma pontuação média um pouco maior.\n\n## Conclusão\n\nEm Minas Gerais, a média de matemática para estudantes do sexo masculino é de **560.2**, enquanto para o sexo feminino é de **555.8**. Embora haja uma diferença, ela é relativamente pequena, sugerindo um desempenho comparável entre os gêneros na disciplina de matemática nesta região."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "planner_agent",
+                "args": {"request": "Analyze the average math scores by gender for students in Minas Gerais and present it as a bar chart. The report should be in Brazilian Portuguese."}
+              },
+              {
+                "name": "data_engineer_agent_tool",
+                "args": {"request": "{\"analytical_request\": \"Write a SQL query to calculate the average math score (NU_NOTA_MT) for students in Minas Gerais, grouped by gender (TP_SEXO). The query should return gender and average math score.\"}"}
+              },
+              {
+                 "name": "descriptive_analyzer_agent_tool",
+                 "args": {"request": "{\"dataset\": \"[{\\\"gender\\\": \\\"Masculino\\\", \\\"average_math_score\\\": 560.2}, {\\\"gender\\\": \\\"Feminino\\\", \\\"average_math_score\\\": 555.8}]\", \"analysis_instructions\": \"Provide descriptive statistics for the average math scores by gender.\"}"}
+              },
+              {
+                "name": "visualization_agent_tool",
+                "args": {"request": "{\"dataset\": [{\"gender\": \"Masculino\", \"average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"average_math_score\": 555.8}], \"visualization_goal\": \"Create a bar chart comparing the average math scores by gender.\"}"}
+              },
+              {
+                "name": "narrative_agent_tool",
+                "args": {"request": "{\"original_question\": \"Analyze the average math scores by gender for students in Minas Gerais and present it as a bar chart. The report should be in Brazilian Portuguese.\", \"analysis_results\": {\"results\": [{\"analysis_type\": \"aggregation\", \"group_by_columns\": [\"gender\"], \"metric_column\": \"average_math_score\", \"groups\": [{\"gender\": \"Masculino\", \"mean_average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"mean_average_math_score\": 555.8}]}], \"suggestions\": []}, \"visualizations\": [{\"chart_spec\": {\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"title\": \"Média de Matemática por Gênero em Minas Gerais\", \"data\": {\"values\": [{\"gender\": \"Masculino\", \"average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"average_math_score\": 555.8}]}, \"mark\": \"bar\", \"encoding\": {\"x\": {\"field\": \"gender\"}, \"y\": {\"field\": \"average_math_score\"}}}, \"filterable_columns\": [\"gender\"]}]}"}
+              }
+            ],
+            "intermediate_responses": [
+              "{\"plan\": [{\"step\": 1, \"agent\": \"data_engineer_agent_tool\", \"instruction\": \"Write a SQL query to calculate the average math score (NU_NOTA_MT) for students in Minas Gerais, grouped by gender (TP_SEXO). The query should return gender and average math score.\"}, {\"step\": 2, \"agent\": \"descriptive_analyzer_agent_tool\", \"instruction\": \"Using the data from step 1, provide descriptive statistics for the average math scores by gender.\"}, {\"step\": 3, \"agent\": \"visualization_agent_tool\", \"instruction\": \"Create a bar chart comparing the average math scores by gender using the data from step 1.\"}, {\"step\": 4, \"agent\": \"narrative_agent_tool\", \"instruction\": \"Generate a report in Brazilian Portuguese analyzing the average math scores by gender in Minas Gerais, incorporating the analysis and visualization.\"}]}",
+              "[{\"gender\": \"Masculino\", \"average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"average_math_score\": 555.8}]",
+              "{\"results\": [{\"analysis_type\": \"aggregation\", \"group_by_columns\": [\"gender\"], \"metric_column\": \"average_math_score\", \"groups\": [{\"gender\": \"Masculino\", \"mean_average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"mean_average_math_score\": 555.8}]}], \"suggestions\": []}",
+              "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Média de Matemática por Gênero em Minas Gerais\",\n    \"data\": {\"values\": [{\"gender\": \"Masculino\", \"average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"average_math_score\": 555.8}]},\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"field\": \"gender\", \"type\": \"nominal\", \"title\": \"Gênero\"},\n      \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}\n    }\n  },\n  \"filterable_columns\": [\"gender\"]\n}\n```"
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_orchestrator_full_flow_viz_analysis"
+      }
+    },
+    {
+      "eval_id": "orchestrator_planner_error_unclear_request",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "Tell me about data."
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "# Relatório Não Concluído\n\n> Não foi possível gerar um plano para a sua solicitação devido à sua natureza vaga.\n\n## Detalhes do Erro\n\nA solicitação \"Tell me about data.\" é muito genérica. Para que a análise seja realizada, por favor, forneça um pedido mais específico.\n\nPor exemplo, você poderia perguntar:\n* \"Qual a média de notas de matemática no estado de São Paulo?\"\n* \"Compare as notas de redação entre escolas públicas e privadas.\"\n* \"Mostre a distribuição das notas de ciências para alunos do sexo feminino na região Nordeste.\"\n\n## Conclusão\n\nPor favor, reformule sua pergunta com mais detalhes para que o sistema possa processá-la e gerar o relatório desejado."
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "planner_agent",
+                "args": {
+                  "request": "Tell me about data."
+                }
+              },
+              {
+                "name": "narrative_agent_tool",
+                "args": {
+                  "request": "{\"original_question\": \"Tell me about data.\", \"analysis_results\": {\"error\": \"Planner failed to create a plan due to ambiguous request.\", \"plan\": []}, \"visualizations\": []}"
+                }
+              }
+            ],
+            "intermediate_responses": [
+              "{\"plan\": [], \"error\": \"Request is too vague. Please specify what data and analysis you are interested in.\"}"
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_orchestrator_planner_error"
+      }
+    }
+  ]
+}

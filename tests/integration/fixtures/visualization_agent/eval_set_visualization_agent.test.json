@@ -1,0 +1,169 @@
+{
+  "eval_set_id": "visualization_agent_eval_set",
+  "name": "Visualization Agent Evaluation Set",
+  "description": "Test cases for the Visualization Agent, focusing on Vega-Lite chart generation and recommendations.",
+  "eval_cases": [
+    {
+      "eval_id": "viz_bar_chart_simple",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": [{\"category\": \"A\", \"value\": 10, \"region\": \"North\"}, {\"category\": \"B\", \"value\": 20, \"region\": \"South\"}], \"visualization_goal\": \"Compare values by category.\", \"suggested_chart_type\": \"bar\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Comparison of Values by Category\",\n    \"data\": {\n      \"values\": [\n        {\"category\": \"A\", \"value\": 10, \"region\": \"North\"},\n        {\"category\": \"B\", \"value\": 20, \"region\": \"South\"}\n      ]\n    },\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"field\": \"category\", \"type\": \"nominal\", \"title\": \"Category\"},\n      \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Value\"}\n    }\n  },\n  \"filterable_columns\": [\"category\", \"region\"]\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_viz_bar_simple"
+      }
+    },
+    {
+      "eval_id": "viz_scatter_plot_correlation",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": [{\"x_axis\": 1, \"y_axis\": 5, \"group\": \"G1\"}, {\"x_axis\": 2, \"y_axis\": 8, \"group\": \"G1\"}, {\"x_axis\": 3, \"y_axis\": 6, \"group\": \"G2\"}], \"visualization_goal\": \"Show the relationship between x_axis and y_axis.\", \"suggested_chart_type\": \"scatter\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Relationship between X-axis and Y-axis\",\n    \"data\": {\n      \"values\": [\n        {\"x_axis\": 1, \"y_axis\": 5, \"group\": \"G1\"},\n        {\"x_axis\": 2, \"y_axis\": 8, \"group\": \"G1\"},\n        {\"x_axis\": 3, \"y_axis\": 6, \"group\": \"G2\"}\n      ]\n    },\n    \"mark\": \"point\",\n    \"encoding\": {\n      \"x\": {\"field\": \"x_axis\", \"type\": \"quantitative\", \"title\": \"X-axis\"},\n      \"y\": {\"field\": \"y_axis\", \"type\": \"quantitative\", \"title\": \"Y-axis\"},\n      \"color\": {\"field\": \"group\", \"type\": \"nominal\", \"title\": \"Group\"}\n    }\n  },\n  \"filterable_columns\": [\"group\"]\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_viz_scatter_corr"
+      }
+    },
+    {
+      "eval_id": "viz_histogram_distribution",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": [{\"score\": 100}, {\"score\": 105}, {\"score\": 110}, {\"score\": 120}, {\"score\": 125}, {\"score\": 130}], \"visualization_goal\": \"Show the distribution of scores.\", \"suggested_chart_type\": \"histogram\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Distribution of Scores\",\n    \"data\": {\n      \"values\": [\n        {\"score\": 100},\n        {\"score\": 105},\n        {\"score\": 110},\n        {\"score\": 120},\n        {\"score\": 125},\n        {\"score\": 130}\n      ]\n    },\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"bin\": true, \"field\": \"score\", \"type\": \"quantitative\", \"title\": \"Score Bins\"},\n      \"y\": {\"aggregate\": \"count\", \"type\": \"quantitative\", \"title\": \"Frequency\"}\n    }\n  },\n  \"filterable_columns\": []\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_viz_hist_dist"
+      }
+    },
+    {
+      "eval_id": "viz_line_chart_temporal",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": [{\"date\": \"2023-01-01\", \"value\": 10}, {\"date\": \"2023-01-02\", \"value\": 15}, {\"date\": \"2023-01-03\", \"value\": 12}], \"visualization_goal\": \"Show the trend of value over time.\", \"suggested_chart_type\": \"line\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Trend of Value Over Time\",\n    \"data\": {\n      \"values\": [\n        {\"date\": \"2023-01-01\", \"value\": 10},\n        {\"date\": \"2023-01-02\", \"value\": 15},\n        {\"date\": \"2023-01-03\", \"value\": 12}\n      ]\n    },\n    \"mark\": \"line\",\n    \"encoding\": {\n      \"x\": {\"field\": \"date\", \"type\": \"temporal\", \"title\": \"Date\"},\n      \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Value\"}\n    }\n  },\n  \"filterable_columns\": []\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_viz_line_temporal"
+      }
+    },
+    {
+      "eval_id": "viz_override_suggestion_for_better_chart",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": [{\"category\": \"A\", \"value\": 10}, {\"category\": \"B\", \"value\": 20}, {\"category\": \"C\", \"value\": 15}, {\"category\": \"D\", \"value\": 25}, {\"category\": \"E\", \"value\": 5}], \"visualization_goal\": \"Compare many categories.\", \"suggested_chart_type\": \"pie\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Comparison of Values Across Categories\",\n    \"data\": {\n      \"values\": [\n        {\"category\": \"A\", \"value\": 10},\n        {\"category\": \"B\", \"value\": 20},\n        {\"category\": \"C\", \"value\": 15},\n        {\"category\": \"D\", \"value\": 25},\n        {\"category\": \"E\", \"value\": 5}\n      ]\n    },\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"field\": \"category\", \"type\": \"nominal\", \"title\": \"Category\"},\n      \"y\": {\"field\": \"value\", \"type\": \"quantitative\", \"title\": \"Value\"}\n    }\n  },\n  \"filterable_columns\": [\"category\"]\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_viz_override_pie"
+      }
+    },
+    {
+      "eval_id": "viz_empty_dataset_error_handling",
+      "conversation": [
+        {
+          "user_content": {
+            "parts": [
+              {
+                "text": "{\"dataset\": [], \"visualization_goal\": \"Show data.\", \"suggested_chart_type\": \"bar\"}"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"chart_spec\": null,\n  \"filterable_columns\": [],\n  \"error\": \"The provided dataset is empty. Cannot generate a visualization.\"\n}\n```"
+              }
+            ],
+            "role": "model"
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "enem_ai_analyst",
+        "user_id": "test_user_viz_empty_data"
+      }
+    }
+  ]
+}

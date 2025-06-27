@@ -74,3 +74,9 @@ root_agent = LlmAgent(
     )
 )
 logger.info("Orchestrator Agent (root_agent) initialized.")
+
+# Wrapper for ADK evaluation
+class agent:
+    pass
+
+agent.root_agent = root_agent

@@ -84,3 +84,7 @@ planner_agent = CountingLlmAgent(
     )
 )
 logger.info("Planner Agent initialized.")
+
+# Wrapper for ADK evaluation
+class agent:
+    root_agent = planner_agent

@@ -91,3 +91,7 @@ analysis_agent = LlmAgent(
         top_k=40,
     )
 )
+
+# Wrapper for ADK evaluation
+class agent:
+    root_agent = analysis_agent
