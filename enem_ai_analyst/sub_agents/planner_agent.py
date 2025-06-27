@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Iterator
 
 from dotenv import load_dotenv
 from google.adk.agents import LlmAgent
@@ -59,7 +60,20 @@ Your most important job is to prevent the system from running out of memory or e
 - **JSON Format:** Ensure that the final output is a valid JSON object in the specified format.
 """
 
-planner_agent = LlmAgent(
+class CountingLlmAgent(LlmAgent):
+    """An LlmAgent that counts its executions."""
+
+    execution_count: int = 0
+
+    def __call__(self, request: str, **kwargs: Any) -> str | Iterator[str]:
+        """Overrides the agent call to add execution counting."""
+        self.execution_count += 1
+        logger.info(
+            f"'{self.name}' has been executed {self.execution_count} times."
+        )
+        return super().__call__(request, **kwargs)
+
+planner_agent = CountingLlmAgent(
     name="planner_agent",
     model="gemini-2.5-pro",
     instruction=PLANNER_INSTRUCTION,
