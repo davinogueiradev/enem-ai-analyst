@@ -319,7 +319,13 @@ def _initialize_chat_components():
 
     # Initialize session state for messages and runner
     if "messages" not in st.session_state:
-        st.session_state["messages"] = []
+        # Load chat history if available
+        history = config_manager.get_chat_history(st.session_state["session_id"])
+        if history:
+            st.session_state["messages"] = history
+        else:
+            st.session_state["messages"] = []
+
     if "runner" not in st.session_state:
         session_service = InMemorySessionService()
         # Create session only once
@@ -336,6 +342,7 @@ def _process_user_prompt(prompt, active_config):
     """Processes a user's chat prompt and gets a response from the AI."""
     # Add user message to history and display it
     st.session_state["messages"].append({"role": "user", "content": prompt})
+    config_manager.add_chat_message(st.session_state["session_id"], "user", prompt) # Save user message
     with st.chat_message("user"):
         st.markdown(prompt)
 
@@ -368,6 +375,7 @@ User Request: {prompt}
                 if full_response:
                     display_message_content(full_response)
                     st.session_state["messages"].append({"role": "assistant", "content": full_response})
+                    config_manager.add_chat_message(st.session_state["session_id"], "assistant", full_response) # Save assistant message
                 else:
                     st.error("Sorry, I couldn't generate a response.")
 
