@@ -1,8 +1,4 @@
-{
-  "eval_set_id": "orchestrator_agent_eval_set",
-  "name": "Orchestrator Agent Evaluation Set",
-  "description": "Test cases for the main Orchestrator Agent, focusing on the end-to-end flow of agent calls.",
-  "eval_cases": [
+[
     {
       "eval_id": "orchestrator_simple_comparison_flow",
       "conversation": [
@@ -53,15 +49,11 @@
             "intermediate_responses": [
               "{\"plan\": [{\"step\": 1, \"agent\": \"data_engineer_agent_tool\", \"instruction\": \"Write a SQL query to calculate the average math score for students in São Paulo, grouped by school type (public and private). The query should return the school type and the average math score.\"}, {\"step\": 2, \"agent\": \"visualization_agent_tool\", \"instruction\": \"Create a bar chart comparing the average math scores of public and private schools based on the data from the previous step.\"}, {\"step\": 3, \"agent\": \"narrative_agent_tool\", \"instruction\": \"Write a summary of the comparison between the average math scores of public and private schools in São Paulo, based on the analysis and visualization. Ensure the report is in Brazilian Portuguese.\"}]}",
               "[{\"school_type\": \"Pública\", \"average_math_score\": 520.5}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0}]",
-              "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Média de Matemática por Tipo de Escola em São Paulo\",\n    \"data\": {\"values\": [{\"school_type\": \"Pública\", \"average_math_score\": 520.5}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0}]},\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"field\": \"school_type\", \"type\": \"nominal\", \"title\": \"Tipo de Escola\"},\n      \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}\n    }\n  },\n  \"filterable_columns\": [\"school_type\"]\n}\n```"
+              "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Média de Matemática por Tipo de Escola em São Paulo\",\n    \"data\": {\"values\": [{\"school_type\": \"Pública\", \"average_math_score\": 520.5}, {\"school_type\": \"Privada\", \"average_math_score\": 680.0}]},\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"field\": \"school_type\", \"type\": \"nominal\", \"title\": \"Tipo de Escola\"},\n      \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}\n    }\n  },\n  \"filterable_columns\": [\"school_type\"]}\n```"
             ]
           }
         }
-      ],
-      "session_input": {
-        "app_name": "enem_ai_analyst",
-        "user_id": "test_user_orchestrator_simple_compare"
-      }
+      ]
     },
     {
       "eval_id": "orchestrator_data_analysis_narrative_flow",
@@ -117,11 +109,7 @@
             ]
           }
         }
-      ],
-      "session_input": {
-        "app_name": "enem_ai_analyst",
-        "user_id": "test_user_orchestrator_data_analysis_narrative"
-      }
+      ]
     },
     {
       "eval_id": "orchestrator_full_flow_with_viz_and_analysis",
@@ -170,15 +158,11 @@
               "{\"plan\": [{\"step\": 1, \"agent\": \"data_engineer_agent_tool\", \"instruction\": \"Write a SQL query to calculate the average math score (NU_NOTA_MT) for students in Minas Gerais, grouped by gender (TP_SEXO). The query should return gender and average math score.\"}, {\"step\": 2, \"agent\": \"descriptive_analyzer_agent_tool\", \"instruction\": \"Using the data from step 1, provide descriptive statistics for the average math scores by gender.\"}, {\"step\": 3, \"agent\": \"visualization_agent_tool\", \"instruction\": \"Create a bar chart comparing the average math scores by gender using the data from step 1.\"}, {\"step\": 4, \"agent\": \"narrative_agent_tool\", \"instruction\": \"Generate a report in Brazilian Portuguese analyzing the average math scores by gender in Minas Gerais, incorporating the analysis and visualization.\"}]}",
               "[{\"gender\": \"Masculino\", \"average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"average_math_score\": 555.8}]",
               "{\"results\": [{\"analysis_type\": \"aggregation\", \"group_by_columns\": [\"gender\"], \"metric_column\": \"average_math_score\", \"groups\": [{\"gender\": \"Masculino\", \"mean_average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"mean_average_math_score\": 555.8}]}], \"suggestions\": []}",
-              "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Média de Matemática por Gênero em Minas Gerais\",\n    \"data\": {\"values\": [{\"gender\": \"Masculino\", \"average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"average_math_score\": 555.8}]},\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"field\": \"gender\", \"type\": \"nominal\", \"title\": \"Gênero\"},\n      \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}\n    }\n  },\n  \"filterable_columns\": [\"gender\"]\n}\n```"
+              "```json\n{\n  \"chart_spec\": {\n    \"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\",\n    \"title\": \"Média de Matemática por Gênero em Minas Gerais\",\n    \"data\": {\"values\": [{\"gender\": \"Masculino\", \"average_math_score\": 560.2}, {\"gender\": \"Feminino\", \"average_math_score\": 555.8}]},\n    \"mark\": \"bar\",\n    \"encoding\": {\n      \"x\": {\"field\": \"gender\", \"type\": \"nominal\", \"title\": \"Gênero\"},\n      \"y\": {\"field\": \"average_math_score\", \"type\": \"quantitative\", \"title\": \"Média em Matemática\"}\n    }\n  },\n  \"filterable_columns\": [\"gender\"]}\n```"
             ]
           }
         }
-      ],
-      "session_input": {
-        "app_name": "enem_ai_analyst",
-        "user_id": "test_user_orchestrator_full_flow_viz_analysis"
-      }
+      ]
     },
     {
       "eval_id": "orchestrator_planner_error_unclear_request",
@@ -220,11 +204,6 @@
             ]
           }
         }
-      ],
-      "session_input": {
-        "app_name": "enem_ai_analyst",
-        "user_id": "test_user_orchestrator_planner_error"
-      }
+      ]
     }
-  ]
-}
+]
