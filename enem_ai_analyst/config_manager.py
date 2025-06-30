@@ -51,6 +51,15 @@ def initialize_db():
             data_context TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS chat_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -80,6 +89,33 @@ def add_config(name, db_host, db_port, db_name, db_user, db_password):
             (name, db_host, db_port, db_name, db_user, _encrypt(db_password))
         )
         conn.commit()
+    finally:
+        conn.close()
+
+# --- Chat History Management ---
+
+def add_chat_message(session_id: str, role: str, content: str):
+    """Adds a chat message to the history."""
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            "INSERT INTO chat_history (session_id, role, content) VALUES (?, ?, ?)",
+            (session_id, role, content)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_chat_history(session_id: str):
+    """Retrieves chat history for a given session_id, ordered by timestamp."""
+    conn = get_db_connection()
+    try:
+        messages = conn.execute(
+            "SELECT role, content, timestamp FROM chat_history WHERE session_id = ? ORDER BY timestamp ASC",
+            (session_id,)
+        ).fetchall()
+        # Convert Row objects to dictionaries for easier use in Streamlit
+        return [{"role": msg["role"], "content": msg["content"], "timestamp": msg["timestamp"]} for msg in messages]
     finally:
         conn.close()
 
