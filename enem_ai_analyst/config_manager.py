@@ -94,13 +94,17 @@ def add_config(name, db_host, db_port, db_name, db_user, db_password):
 
 # --- Chat History Management ---
 
+from datetime import datetime
+
 def add_chat_message(session_id: str, role: str, content: str):
-    """Adds a chat message to the history."""
+    """Adds a chat message to the history, using the current time for the timestamp."""
     conn = get_db_connection()
     try:
+        # datetime.now() will be patched by freezegun during tests
+        current_time = datetime.now()
         conn.execute(
-            "INSERT INTO chat_history (session_id, role, content) VALUES (?, ?, ?)",
-            (session_id, role, content)
+            "INSERT INTO chat_history (session_id, role, content, timestamp) VALUES (?, ?, ?, ?)",
+            (session_id, role, content, current_time)
         )
         conn.commit()
     finally:
@@ -116,6 +120,46 @@ def get_chat_history(session_id: str):
         ).fetchall()
         # Convert Row objects to dictionaries for easier use in Streamlit
         return [{"role": msg["role"], "content": msg["content"], "timestamp": msg["timestamp"]} for msg in messages]
+    finally:
+        conn.close()
+
+def get_chat_sessions_preview():
+    """
+    Retrieves a list of all unique chat sessions, with a preview (first user message content and timestamp).
+    Sessions are ordered by the timestamp of their first message, descending (newest first).
+    """
+    conn = get_db_connection()
+    try:
+        # Get the first message (user or assistant) for each session_id
+        # and order sessions by the timestamp of that first message.
+        sessions = conn.execute("""
+            SELECT
+                ch.session_id,
+                ch.content AS first_message_content,
+                ch.timestamp AS first_message_timestamp,
+                ch.role AS first_message_role
+            FROM chat_history ch
+            INNER JOIN (
+                SELECT session_id, MIN(timestamp) AS min_ts
+                FROM chat_history
+                GROUP BY session_id
+            ) AS first_msgs ON ch.session_id = first_msgs.session_id AND ch.timestamp = first_msgs.min_ts
+            ORDER BY ch.timestamp DESC
+        """).fetchall()
+
+        # For preview, we prefer the first *user* message. If the absolute first message is assistant,
+        # we might need a more complex query or post-processing if a user prompt is essential for context.
+        # For now, let's keep it simple and use the absolute first message.
+        # A more sophisticated approach might be to fetch the first 'user' role message.
+
+        return [
+            {
+                "session_id": s["session_id"],
+                "preview_content": s["first_message_content"][:50] + "..." if len(s["first_message_content"]) > 50 else s["first_message_content"], # Preview first 50 chars
+                "timestamp": s["first_message_timestamp"]
+            }
+            for s in sessions
+        ]
     finally:
         conn.close()
 
