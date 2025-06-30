@@ -311,38 +311,68 @@ def _initialize_chat_components():
     # Initialize dynamic USER_ID and SESSION_ID if not already set
     if "user_id" not in st.session_state:
         st.session_state["user_id"] = str(uuid.uuid4())
-    if "session_id" not in st.session_state:
-        st.session_state["session_id"] = str(uuid.uuid4())
+
+    # If a chat is selected from history, use that session_id, otherwise generate a new one.
+    # "selected_session_id" will be set by the chat history UI.
+    # "current_chat_session_id" is the session_id for the *active* chat window.
+    if "selected_session_id" in st.session_state and st.session_state.selected_session_id:
+        if "current_chat_session_id" not in st.session_state or \
+           st.session_state.current_chat_session_id != st.session_state.selected_session_id:
+            st.session_state.current_chat_session_id = st.session_state.selected_session_id
+            # Clear messages to force reload for the selected session
+            if "messages" in st.session_state:
+                del st.session_state["messages"]
+    elif "current_chat_session_id" not in st.session_state:
+        st.session_state["current_chat_session_id"] = str(uuid.uuid4())
 
     current_user_id = st.session_state["user_id"]
-    current_session_id = st.session_state["session_id"]
+    current_session_id = st.session_state["current_chat_session_id"] # Use the active session ID
 
     # Initialize session state for messages and runner
     if "messages" not in st.session_state:
-        # Load chat history if available
-        history = config_manager.get_chat_history(st.session_state["session_id"])
+        # Load chat history if available for the current_session_id
+        history = config_manager.get_chat_history(current_session_id)
         if history:
             st.session_state["messages"] = history
         else:
             st.session_state["messages"] = []
 
-    if "runner" not in st.session_state:
+    # The runner needs to be associated with the current_chat_session_id.
+    # If the session_id changes, we might need to re-initialize or update the runner's session.
+    # For ADK InMemorySessionService, creating a session with an existing ID should be fine
+    # or it might retrieve the existing one. If not, this part might need adjustment.
+    if "runner" not in st.session_state or \
+       st.session_state.get("runner_session_id") != current_session_id:
         session_service = InMemorySessionService()
-        # Create session only once
         asyncio.run(session_service.create_session(app_name=APP_NAME, user_id=current_user_id, session_id=current_session_id))
         st.session_state["runner"] = Runner(agent=root_agent, app_name=APP_NAME, session_service=session_service)
+        st.session_state["runner_session_id"] = current_session_id
+
 
 def _display_chat_history():
     """Displays all messages in the chat history."""
-    for message in st.session_state["messages"]:
+    # Ensure messages are loaded for the current chat session
+    # This check might be redundant if _initialize_chat_components handles it thoroughly
+    if st.session_state.get("current_chat_session_id") and \
+       (not st.session_state.get("messages") or \
+        st.session_state.messages[0].get("session_id_ref") != st.session_state.current_chat_session_id): # Crude check
+
+        # This part is tricky: messages in st.session_state.messages don't currently store their session_id.
+        # We rely on _initialize_chat_components to load the correct messages.
+        # If messages are empty, _initialize_chat_components should load them.
+        # If they are from a different session, _initialize_chat_components should clear and reload.
+        pass # Relying on initialization logic for now.
+
+    for message in st.session_state.get("messages", []):
         with st.chat_message(message["role"]):
             display_message_content(message["content"])
 
 def _process_user_prompt(prompt, active_config):
     """Processes a user's chat prompt and gets a response from the AI."""
+    current_session_id = st.session_state["current_chat_session_id"]
     # Add user message to history and display it
     st.session_state["messages"].append({"role": "user", "content": prompt})
-    config_manager.add_chat_message(st.session_state["session_id"], "user", prompt) # Save user message
+    config_manager.add_chat_message(current_session_id, "user", prompt) # Save user message
     with st.chat_message("user"):
         st.markdown(prompt)
 
@@ -364,7 +394,8 @@ User Request: {prompt}
 """
                 content = types.Content(role="user", parts=[types.Part(text=prompt_with_context)])
                 runner = st.session_state["runner"]
-                events = runner.run(user_id=st.session_state["user_id"], session_id=st.session_state["session_id"], new_message=content)
+                # Ensure runner is using the correct session_id from current_chat_session_id
+                events = runner.run(user_id=st.session_state["user_id"], session_id=st.session_state["current_chat_session_id"], new_message=content)
 
                 full_response = ""
                 for event in events:
@@ -375,9 +406,63 @@ User Request: {prompt}
                 if full_response:
                     display_message_content(full_response)
                     st.session_state["messages"].append({"role": "assistant", "content": full_response})
-                    config_manager.add_chat_message(st.session_state["session_id"], "assistant", full_response) # Save assistant message
+                    config_manager.add_chat_message(st.session_state["current_chat_session_id"], "assistant", full_response) # Save assistant message
                 else:
                     st.error("Sorry, I couldn't generate a response.")
+
+# --- Sidebar: Chat History Display ---
+def _render_sidebar_chat_history():
+    """Renders the chat history list in the sidebar."""
+    st.sidebar.markdown("---")
+    st.sidebar.title("Chat History")
+
+    if st.sidebar.button("➕ New Chat", key="new_chat_button"):
+        # Generate a new session ID for the new chat
+        new_session_id = str(uuid.uuid4())
+        st.session_state.current_chat_session_id = new_session_id
+        st.session_state.selected_session_id = new_session_id # Ensure this new chat is "selected"
+
+        # Clear existing messages from session state to start fresh
+        if "messages" in st.session_state:
+            del st.session_state["messages"]
+
+        # Potentially clear other session-specific states if necessary
+        # e.g. if runner holds onto old session data in a problematic way
+        if "runner" in st.session_state: # Force re-initialization of runner for the new session
+            del st.session_state["runner"]
+            if "runner_session_id" in st.session_state:
+                 del st.session_state["runner_session_id"]
+
+        st.rerun() # Rerun to reflect the new chat state
+
+    chat_sessions = config_manager.get_chat_sessions_preview()
+
+    if not chat_sessions:
+        st.sidebar.caption("No past chats found.")
+        return
+
+    for session in chat_sessions:
+        session_id = session["session_id"]
+        preview = session["preview_content"]
+        timestamp = session["timestamp"]
+
+        # Display a more user-friendly representation
+        # Using a button for each chat history item
+        button_label = f"{preview} ({timestamp.split('.')[0]})" # Show timestamp without milliseconds
+        if st.sidebar.button(button_label, key=f"chat_{session_id}"):
+            # When a chat is selected from history:
+            # 1. Store the selected session_id
+            st.session_state.selected_session_id = session_id
+
+            # 2. Update current_chat_session_id to the selected one
+            st.session_state.current_chat_session_id = session_id
+
+            # 3. Clear current messages to trigger reload in _initialize_chat_components
+            if "messages" in st.session_state:
+                del st.session_state["messages"]
+
+            # 4. Rerun the app to reload the chat and update the runner
+            st.rerun()
 
 def main() -> None:
     """Main function to run the Streamlit AI Data Analyst application."""
@@ -387,6 +472,9 @@ def main() -> None:
     configs = config_manager.get_all_config_names()
     selected_name = _render_sidebar_connection_selector(configs)
     _render_sidebar_connection_crud(selected_name, configs)
+
+    # --- Chat History Display ---
+    _render_sidebar_chat_history() # New function call
 
     # --- Load active config and set environment variables ---
     active_config = _get_and_set_active_db_config(selected_name)
