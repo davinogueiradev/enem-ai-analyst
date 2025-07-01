@@ -12,7 +12,7 @@ python = "~3.12" # Com base na versão do Python do seu projeto (3.12.8)
 streamlit = "^1.45.1"
 google-genai = "^1.19.0"
 python-dotenv = "^1.1.0"
-google-adk = "^1.3.0"
+google-adk = "^1.5.0"
 pandas = "^2.3.0"
 numpy = "^2.3.0"
 matplotlib = "^3.10.3"
@@ -27,7 +27,7 @@ cryptography = "^45.0.4"
 ruff = "^0.11.13"
 mypy = "^1.16.0"
 watchdog = "^6.0.0"
-google-adk = {extras = ["eval"], version = "^1.3.0"}
+google-adk = {extras = ["eval"], version = "^1.5.0"}
 pytest-asyncio = "^1.0.0"
 freezegun = "^1.5.2"
 
