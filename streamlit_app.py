@@ -1,7 +1,7 @@
 import asyncio
 import json
-import re
 import os
+import re
 import uuid
 
 import pandas as pd
@@ -9,9 +9,10 @@ import streamlit as st
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
+
+from enem_ai_analyst import config_manager
 from enem_ai_analyst.agent import root_agent
 from enem_ai_analyst.tools.postgres_mcp import list_tables_and_schemas
-from enem_ai_analyst import config_manager
 
 # --- Helper Functions ---
 
@@ -384,15 +385,11 @@ def _process_user_prompt(prompt, active_config):
             elif not active_config.get("db_schema"):
                 st.error("Please load the database schema first for the selected connection.")
             else:
-                prompt_with_context = f"""
-Database Schema: {active_config['db_schema']}
-
-Data Context:
-{active_config.get('data_context', '')}
-
-User Request: {prompt}
-"""
-                content = types.Content(role="user", parts=[types.Part(text=prompt_with_context)])
+                structured_input = json.dumps({
+                    "user_request": prompt,
+                    "data_context": active_config.get('data_context', '')
+                })
+                content = types.Content(role="user", parts=[types.Part(text=structured_input)])
                 runner = st.session_state["runner"]
                 # Ensure runner is using the correct session_id from current_chat_session_id
                 events = runner.run(user_id=st.session_state["user_id"], session_id=st.session_state["current_chat_session_id"], new_message=content)
