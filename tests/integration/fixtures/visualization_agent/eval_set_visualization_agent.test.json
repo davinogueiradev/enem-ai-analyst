@@ -26,7 +26,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_viz_bar_simple"
       }
     },
@@ -53,7 +53,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_viz_scatter_corr"
       }
     },
@@ -80,7 +80,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_viz_hist_dist"
       }
     },
@@ -107,7 +107,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_viz_line_temporal"
       }
     },
@@ -134,7 +134,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_viz_override_pie"
       }
     },
@@ -161,7 +161,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_viz_empty_data"
       }
     }

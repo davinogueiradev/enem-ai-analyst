@@ -10,9 +10,9 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
-from enem_ai_analyst import config_manager
-from enem_ai_analyst.agent import root_agent
-from enem_ai_analyst.tools.postgres_mcp import list_tables_and_schemas
+from ai_data_analyst import config_manager
+from ai_data_analyst.agent import root_agent
+from ai_data_analyst.tools.postgres_mcp import list_tables_and_schemas
 
 # --- Helper Functions ---
 

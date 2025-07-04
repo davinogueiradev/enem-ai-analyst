@@ -8,7 +8,7 @@ from freezegun import freeze_time
 # Adjust path to import config_manager from the parent directory
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from enem_ai_analyst import config_manager
+from ai_data_analyst import config_manager
 
 # --- Test Database Fixture ---
 TEST_DB_FILE = "test_configs.db"

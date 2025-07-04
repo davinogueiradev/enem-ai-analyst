@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "enem-ai-analyst" # Substitua pelo nome real do seu projeto
+name = "ai-data-analyst" # Substitua pelo nome real do seu projeto
 version = "0.1.0" # Pode ajustar a versão inicial conforme necessário
 description = "Descrição do seu projeto" # Adicione uma breve descrição
 authors = ["O Seu Nome <o.seu.email@exemplo.com>"] # Substitua pelos seus dados

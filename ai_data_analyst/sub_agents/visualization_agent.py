@@ -4,7 +4,7 @@ import logging
 from google.adk.agents import LlmAgent
 from google.genai import types
 
-from enem_ai_analyst.tools.chart_validation import validate_chart_spec
+from ai_data_analyst.tools.chart_validation import validate_chart_spec
 
 # Configure logging for the visualization agent
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
