@@ -18,15 +18,17 @@ O coração do ENEM-AI Analyst é um sistema de múltiplos agentes de IA, orques
 
 A arquitetura é definida principalmente no arquivo `enem_ai_analyst/agent.py` e no diretório `enem_ai_analyst/sub_agents/` e funciona da seguinte forma:
 
-1.  **Agente Orquestrador (`agent.py`)**: Este é o "maestro" do sistema. Ele recebe a pergunta do usuário em linguagem natural e coordena o trabalho dos outros agentes. Ele não responde diretamente, mas segue um fluxo de trabalho rigoroso para garantir que a resposta final seja completa e precisa.
+1.  **Agente Orquestrador (`agent.py`)**: Este é o "maestro" do sistema. Ele recebe a pergunta do usuário em linguagem natural e interage com o Agente de Planejamento para definir um plano de ação. Em seguida, coordena o trabalho dos outros agentes especialistas para executar esse plano. Ele não responde diretamente, mas segue o plano gerado para garantir que a resposta final seja completa e precisa.
 
-2.  **Agentes Especialistas (`sub_agents/`)**: São as ferramentas que o Orquestrador utiliza. Cada um é um LLM com um prompt de sistema especializado:
-    *   **`data_agent.py` (Agente de Dados)**: O engenheiro de dados. Sua única função é traduzir a pergunta do usuário em uma consulta SQL segura e eficiente, extrair os dados do banco de dados PostgreSQL e entregá-los em um formato limpo (JSON).
-    *   **`analysis_agent.py` (Agente de Análise)**: O estatístico. Ele recebe os dados brutos do Agente de Dados e realiza análises descritivas, como médias, contagens e correlações. Ele devolve os resultados de forma estruturada e pode sugerir análises mais profundas ou visualizações.
-    *   **`visualization_agent.py` (Agente de Visualização)**: O designer de visualizações. Se a análise sugere a criação de um gráfico, este agente entra em ação. Ele recebe os dados analisados e gera a especificação para um gráfico relevante (usando Vega-Lite), escolhendo o melhor tipo de visualização para os dados.
-    *   **`narrative_agent.py` (Agente de Narrativa)**: O contador de histórias. Este é o agente final no fluxo. Ele reúne a pergunta original, os resultados da análise estatística e os gráficos gerados para escrever um relatório final coeso, claro e em português, explicando os insights encontrados.
+2.  **Agente de Planejamento (`sub_agents/planner_agent.py`)**: Este agente é o estrategista. Ele recebe a pergunta do usuário do Agente Orquestrador e a decompõe em um plano JSON estruturado, passo a passo. Cada passo especifica qual agente especialista deve ser acionado e qual instrução deve seguir. Sua principal responsabilidade é garantir que as agregações e comparações ocorram dentro do banco de dados para otimizar o desempenho e evitar problemas de memória.
 
-Esse fluxo de trabalho sequencial e especializado permite que o sistema decomponha problemas complexos, aplique a "ferramenta" de IA correta para cada tarefa e sintetize as informações em uma resposta final de alta qualidade para o usuário.
+3.  **Agentes Especialistas (`sub_agents/`)**: São as ferramentas que o Orquestrador utiliza, seguindo o plano do Agente de Planejamento. Cada um é um LLM com um prompt de sistema especializado:
+    *   **`data_agent.py` (Agente de Dados)**: O engenheiro de dados. Sua função é traduzir a instrução do plano (originalmente derivada da pergunta do usuário) em uma consulta SQL segura e eficiente, extrair os dados do banco de dados PostgreSQL e entregá-los em um formato limpo (JSON).
+    *   **`analysis_agent.py` (Agente de Análise)**: O estatístico. Ele recebe os dados brutos do Agente de Dados e realiza análises descritivas, como médias, contagens e correlações, conforme instruído pelo plano. Ele devolve os resultados de forma estruturada.
+    *   **`visualization_agent.py` (Agente de Visualização)**: O designer de visualizações. Se o plano inclui a criação de um gráfico, este agente entra em ação. Ele recebe os dados analisados e gera a especificação para um gráfico relevante (usando Vega-Lite), escolhendo o melhor tipo de visualização para os dados.
+    *   **`narrative_agent.py` (Agente de Narrativa)**: O contador de histórias. Este é o agente final no fluxo. Ele reúne a pergunta original, os resultados da análise estatística e os gráficos gerados para escrever um relatório final coeso, claro e em português, explicando os insights encontrados, tudo de acordo com as diretrizes do plano.
+
+Esse fluxo de trabalho, agora guiado por um plano explícito, permite que o sistema decomponha problemas complexos de forma mais estruturada, aplique a "ferramenta" de IA correta para cada tarefa e sintetize as informações em uma resposta final de alta qualidade para o usuário.
 
 ## Requisitos
 
@@ -81,6 +83,7 @@ enem-ai-analyst
 │   │   ├── analysis_agent.py
 │   │   ├── data_agent.py
 │   │   ├── narrative_agent.py
+│   │   ├── planner_agent.py
 │   │   └── visualization_agent.py
 │   └── tools
 │       ├── __init__.py
@@ -103,12 +106,13 @@ enem-ai-analyst
 **Principais Diretórios e Arquivos:**
 
 *   `enem_ai_analyst/`: O coração da aplicação, contendo todo o código-fonte Python.
-    *   `agent.py`: Define o **Agente Orquestrador**. Ele é o ponto de entrada para o sistema de IA, recebendo a pergunta do usuário e gerenciando o fluxo de trabalho entre os agentes especialistas.
-    *   `sub_agents/`: Contém os **Agentes Especialistas**, cada um com uma função bem definida:
-        *   `data_agent.py`: Responsável por interagir com o banco de dados. Ele traduz a linguagem natural em consultas SQL.
-        *   `analysis_agent.py`: Realiza análises estatísticas nos dados retornados pelo `data_agent`.
-        *   `visualization_agent.py`: Cria as especificações para os gráficos (em formato Vega-Lite) com base na análise.
-        *   `narrative_agent.py`: Compila todas as informações (análise, gráficos) em um relatório final coeso e em português.
+    *   `agent.py`: Define o **Agente Orquestrador**. Ele é o ponto de entrada para o sistema de IA, recebendo a pergunta do usuário, utilizando o `Planner Agent` para criar um plano, e então gerenciando a execução desse plano pelos agentes especialistas.
+    *   `sub_agents/`: Contém os **Agentes Especialistas** e o **Agente de Planejamento**, cada um com uma função bem definida:
+        *   `planner_agent.py`: Responsável por receber a pergunta do usuário e criar um plano JSON detalhado que os outros agentes seguirão.
+        *   `data_agent.py`: Responsável por interagir com o banco de dados conforme as instruções do plano. Ele traduz a linguagem natural em consultas SQL.
+        *   `analysis_agent.py`: Realiza análises estatísticas nos dados retornados pelo `data_agent`, seguindo as diretrizes do plano.
+        *   `visualization_agent.py`: Cria as especificações para os gráficos (em formato Vega-Lite) com base na análise e no plano.
+        *   `narrative_agent.py`: Compila todas as informações (análise, gráficos) em um relatório final coeso e em português, conforme o plano.
     *   `tools/`: Ferramentas auxiliares que os agentes utilizam para realizar suas tarefas, como `postgres_mcp.py` para a conexão com o banco de dados e `chart_validation.py` para validar os gráficos.
 *   `streamlit_app.py`: O ponto de entrada da interface web. Este script usa a biblioteca Streamlit para criar a página, capturar a pergunta do usuário e chamar o Agente Orquestrador.
 *   `Dockerfile` e `docker-compose.yml`: Arquivos de configuração para containerização. Eles permitem que a aplicação e seus serviços (como o banco de dados PostgreSQL) sejam executados de forma isolada e consistente em qualquer ambiente com Docker.
