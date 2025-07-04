@@ -26,7 +26,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_planner_simple_comparison"
       }
     },
@@ -53,7 +53,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_planner_count_group"
       }
     },
@@ -80,7 +80,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_planner_no_aggregation"
       }
     },
@@ -107,7 +107,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_planner_complex_multi_metrics"
       }
     },
@@ -134,7 +134,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_planner_viz_only"
       }
     }

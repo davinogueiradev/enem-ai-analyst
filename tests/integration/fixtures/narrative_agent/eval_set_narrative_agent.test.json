@@ -26,7 +26,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_narrative_simple_no_viz"
       }
     },
@@ -53,7 +53,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_narrative_with_viz"
       }
     },
@@ -80,7 +80,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_narrative_with_table"
       }
     },
@@ -107,7 +107,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_narrative_error_handling"
       }
     },
@@ -134,7 +134,7 @@
         }
       ],
       "session_input": {
-        "app_name": "enem_ai_analyst",
+        "app_name": "ai_data_analyst",
         "user_id": "test_user_narrative_complex"
       }
     }

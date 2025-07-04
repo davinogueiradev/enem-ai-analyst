@@ -19,7 +19,7 @@ O AI Data Analyst emprega um sofisticado sistema multi-agente, construído com o
 
 O coração do AI Data Analyst é um sistema de múltiplos agentes de IA, orquestrado para responder a perguntas complexas de forma colaborativa. Cada agente é um especialista com uma função específica, garantindo que cada etapa do processo de análise seja tratada com precisão.
 
-A arquitetura é definida principalmente no arquivo `enem_ai_analyst/agent.py` (a ser renomeado, por exemplo, para `ai_data_analyst/main_agent.py`) e no diretório `enem_ai_analyst/sub_agents/` (da mesma forma, a ser renomeado, por exemplo, para `ai_data_analyst/sub_agents/`).
+A arquitetura é definida principalmente no arquivo `ai_data_analyst/agent.py` (que pode ser futuramente renomeado para `main_agent.py`) e no diretório `ai_data_analyst/sub_agents/`.
 
 1.  **Agente Orquestrador (`main_agent.py`)**: Este é o "maestro" do sistema. Ele recebe a pergunta do usuário em linguagem natural e interage com o Agente de Planejamento para definir um plano de ação. Em seguida, coordena o trabalho dos outros agentes especialistas para executar esse plano. Ele não responde diretamente, mas segue o plano gerado para garantir que a resposta final seja completa e precisa.
 
@@ -76,9 +76,9 @@ O AI Data Analyst é projetado para tornar seu fluxo de trabalho de análise de 
     poetry run streamlit run streamlit_app.py
     ```
 
-## Estrutura do Projeto (Ilustrativa - pode precisar de atualizações com base na refatoração)
+## Estrutura do Projeto
 
-A estrutura de diretórios do projeto foi organizada para separar claramente as responsabilidades, facilitando a manutenção e o desenvolvimento. (Observação: Nomes de arquivos e diretórios como `enem_ai_analyst` serão atualizados para refletir a natureza genérica, por exemplo, `ai_data_analyst`).
+A estrutura de diretórios do projeto foi organizada para separar claramente as responsabilidades, facilitando a manutenção e o desenvolvimento. O diretório principal da aplicação foi renomeado de `enem_ai_analyst` para `ai_data_analyst`.
 
 ```
 ai-data-analyst  # Ou o nome escolhido para o projeto

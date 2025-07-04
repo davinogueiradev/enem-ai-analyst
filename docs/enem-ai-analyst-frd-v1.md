@@ -1,13 +1,13 @@
-# **Feature Requirements Document (FRD) \- ENEM-AI Analyst**
+# **Feature Requirements Document (FRD) \- AI Data Analyst**
 
 Version: 1.0  
 Date: June 9, 2024  
 Author: Gemini  
-Source PRD: ENEM-AI Analyst PRD v1.0
+Source PRD: AI Data Analyst PRD v1.0
 
 ### **1\. Introduction**
 
-This document provides a detailed breakdown of the features required for the Minimum Viable Product (MVP) of the ENEM-AI Analyst platform. It translates the high-level requirements from the PRD into specific, actionable items for the development team.
+This document provides a detailed breakdown of the features required for the Minimum Viable Product (MVP) of the AI Data Analyst platform. It translates the high-level requirements from the PRD into specific, actionable items for the development team.
 
 ### **2\. Feature Overview**
 

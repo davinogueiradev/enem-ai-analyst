@@ -1,15 +1,15 @@
-Product Requirements Document: ENEM-AI Analyst
+Product Requirements Document: AI Data Analyst
 Version: 1.0
 Date: June 9, 2024
 Author: Gemini (acting as experienced Product Manager)
 Status: Final
 
 1. Introduction & Executive Summary
-This document outlines the product requirements for ENEM-AI Analyst, a multi-agent data analysis platform designed to make vast and complex Brazilian educational datasets, including multiple years of ENEM (Exame Nacional do Ensino Médio) and the Censo Escolar, accessible through a natural language interface.
+This document outlines the product requirements for AI Data Analyst, a multi-agent data analysis platform designed to make vast and complex Brazilian educational datasets, including multiple years of ENEM (Exame Nacional do Ensino Médio) and the Censo Escolar, accessible through a natural language interface.
 
 The core of this product is a sophisticated system of AI agents, built using the Google Agent Development Kit (ADK), that work collaboratively to understand user queries, perform complex data analysis across multiple sources and timeframes, and deliver insights. Users will interact with the system via a simple chat interface, receiving answers in the form of text summaries, tables, and interactive visualizations rendered in a Streamlit frontend. All data will be securely managed and queried from a PostgreSQL MCP database.
 
-The primary goal of ENEM-AI Analyst is to democratize access to educational data in Brazil, enabling researchers, journalists, and policymakers to uncover deep, correlational, and longitudinal insights in minutes, not weeks, within a secure and responsible framework.
+The primary goal of AI Data Analyst is to democratize access to educational data in Brazil, enabling researchers, journalists, and policymakers to uncover deep, correlational, and longitudinal insights in minutes, not weeks, within a secure and responsible framework.
 
 2. The Problem
 Analyzing Brazilian educational microdata is a significant challenge for several reasons:
