@@ -84,11 +84,11 @@ def display_message_content(message_text):
                 if 'data' in spec_for_render:
                     del spec_for_render['data']
 
-                st.vega_lite_chart(filtered_data, spec_for_render, use_container_width=True)
+                st.altair_chart(filtered_data, use_container_width=True, **spec_for_render)
             else:
                 # For non-filterable charts (no filterable_columns) or charts
                 # with data from a URL (data is empty), render the spec directly.
-                st.vega_lite_chart(chart_spec, use_container_width=True)
+                st.altair_chart(chart_spec, use_container_width=True)
 
         except json.JSONDecodeError as e:
             st.error(f"Failed to parse chart JSON: {e}")
